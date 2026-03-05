@@ -4,7 +4,8 @@ import {
   loginUser,
   getUserProfile,
   addEmergencyContact,
-  deleteEmergencyContact
+  deleteEmergencyContact,
+  sendContactMessage
 } from "../controller/UserController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -18,6 +19,8 @@ UserRouter.post("/register", registerUser);
 
 // Login User
 UserRouter.post("/login", loginUser);
+
+UserRouter.use("/contact",sendContactMessage);
 
 
 /* ================= USER PROFILE ================= */

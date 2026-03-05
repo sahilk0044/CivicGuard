@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 /* ================= REGISTER USER ================= */
 export const registerUser = async (req, res) => {
@@ -115,4 +116,73 @@ export const deleteEmergencyContact = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
+
+export const sendContactMessage = async (req, res) => {
+
+  const { name, email, message } = req.body;
+
+  try {
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    });
+
+    /* ================= ADMIN EMAIL ================= */
+
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: process.env.EMAIL,   // admin email
+      subject: "New CivicGuard Contact Message",
+      html: `
+        <h3>New Contact Message</h3>
+
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Message:</b> ${message}</p>
+      `
+    });
+
+    /* ================= AUTO REPLY TO USER ================= */
+
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: email,
+      subject: "CivicGuard Support - Message Received",
+      html: `
+        <h2>Hello ${name},</h2>
+
+        <p>Thank you for contacting <b>CivicGuard Emergency Alert System</b>.</p>
+
+        <p>We have received your message and our team will review it shortly.</p>
+
+        <p>If this is an emergency, please contact your local emergency services immediately.</p>
+
+        <br/>
+
+        <p>Stay safe,</p>
+        <p><b>CivicGuard Support Team</b></p>
+      `
+    });
+
+    res.json({
+      success: true,
+      message: "Message sent successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to send message"
+    });
+
+  }
+
 };
