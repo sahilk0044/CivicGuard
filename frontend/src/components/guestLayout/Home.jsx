@@ -82,9 +82,9 @@ const Home = () => {
           </h1>
 
           <p className="hero-text" data-aos="fade-up">
-            CivicGuard is designed to protect individuals by sending instant
-            emergency alerts with location and video evidence to trusted
-            contacts and authorities.
+            Your safety should never depend on luck. CivicGuard empowers users
+            to quickly alert trusted contacts and authorities during emergency
+            situations using modern technology.
           </p>
 
           <Button
@@ -93,20 +93,20 @@ const Home = () => {
             className="cta-btn"
             data-aos="zoom-in"
           >
-            Get Started
+            Join CivicGuard Today
           </Button>
 
         </Container>
       </section>
 
-      {/* FEATURES */}
+      {/* WHY CIVICGUARD */}
 
       <section className="section">
 
         <Container>
 
           <Row className="text-center mb-5">
-            <h2 data-aos="fade-up">Key Features</h2>
+            <h2 data-aos="fade-up">Why CivicGuard?</h2>
           </Row>
 
           <Row>
@@ -115,13 +115,13 @@ const Home = () => {
 
               <Card className="feature-card">
 
-                <div className="feature-icon">🚨</div>
+                <div className="feature-icon">🛡</div>
 
-                <h5>Instant Emergency Alerts</h5>
+                <h5>Personal Safety</h5>
 
                 <p>
-                  Send emergency alerts instantly to family members and
-                  authorities during dangerous situations.
+                  CivicGuard focuses on protecting individuals by providing a
+                  reliable platform to request help during dangerous situations.
                 </p>
 
               </Card>
@@ -132,13 +132,13 @@ const Home = () => {
 
               <Card className="feature-card">
 
-                <div className="feature-icon">📍</div>
+                <div className="feature-icon">⚡</div>
 
-                <h5>Live Location Tracking</h5>
+                <h5>Fast Emergency Response</h5>
 
                 <p>
-                  GPS technology allows real-time location tracking to help
-                  responders reach you quickly.
+                  The system ensures that alerts reach the right people quickly
+                  so help can arrive without delay.
                 </p>
 
               </Card>
@@ -149,13 +149,13 @@ const Home = () => {
 
               <Card className="feature-card">
 
-                <div className="feature-icon">🎥</div>
+                <div className="feature-icon">🌐</div>
 
-                <h5>Video Evidence</h5>
+                <h5>Technology for Safety</h5>
 
                 <p>
-                  Capture and store video evidence during emergencies to assist
-                  authorities.
+                  CivicGuard uses modern web technologies to build a smarter
+                  and more connected safety ecosystem.
                 </p>
 
               </Card>
@@ -168,46 +168,60 @@ const Home = () => {
 
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* OUR MISSION */}
 
       <section className="section" style={{background:"#f9fafb"}}>
 
         <Container>
 
           <Row className="text-center mb-5">
-            <h2 data-aos="fade-up">How CivicGuard Works</h2>
+            <h2 data-aos="fade-up">Our Mission</h2>
           </Row>
 
           <Row>
 
-            <Col md={4} data-aos="fade-up">
+            <Col md={12} data-aos="fade-up">
 
-              <h4>1️⃣ Press Emergency Button</h4>
-              <p>
-                When you feel unsafe, press the emergency button to trigger the alert.
-              </p>
-
-            </Col>
-
-            <Col md={4} data-aos="fade-up" data-aos-delay="200">
-
-              <h4>2️⃣ Capture Location & Video</h4>
-              <p>
-                The system records GPS location and video evidence automatically.
-              </p>
-
-            </Col>
-
-            <Col md={4} data-aos="fade-up" data-aos-delay="400">
-
-              <h4>3️⃣ Alert Sent</h4>
-              <p>
-                Emergency contacts and authorities receive alerts instantly.
+              <p style={{fontSize:"18px",maxWidth:"800px",margin:"auto"}}>
+                Our mission is to create a safer environment by connecting
+                people, technology, and emergency services. CivicGuard helps
+                individuals quickly notify trusted contacts and authorities
+                during critical situations, improving response time and
+                potentially saving lives.
               </p>
 
             </Col>
 
           </Row>
+
+        </Container>
+
+      </section>
+
+      {/* CALL TO ACTION */}
+
+      <section className="section">
+
+        <Container className="text-center">
+
+          <h2 data-aos="fade-up">
+            Safety Starts With Awareness
+          </h2>
+
+          <p data-aos="fade-up" style={{maxWidth:"600px",margin:"auto"}}>
+            Join CivicGuard and take a step towards a smarter emergency
+            response system. Your safety and your loved ones' safety matter.
+          </p>
+
+          <Button
+            as={NavLink}
+            to="/register"
+            className="cta-btn"
+            data-aos="zoom-in"
+            style={{marginTop:"20px"}}
+          >
+            Create Your Account
+          </Button>
 
         </Container>
 
