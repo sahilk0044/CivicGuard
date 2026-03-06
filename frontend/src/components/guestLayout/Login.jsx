@@ -41,7 +41,7 @@ const Login = () => {
       setType("success");
 
       setTimeout(()=>{
-        navigate("/dashboard");
+        navigate("/user/dashboard");
       },1500);
 
     }catch(err){

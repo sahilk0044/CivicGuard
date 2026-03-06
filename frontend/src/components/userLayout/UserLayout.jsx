@@ -1,12 +1,12 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom';
-import GuestFooter from './GuestFooter';
-import GuestHeader1 from './GuestHeader1';
-const GuestLayout = () => {
+import UserHeader from './UserHeader';
+import UserFooter from './UserFooter';
+const UserLayout = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <div style={{ position: 'fixed', top: 0, width: '100%', zIndex: 100 }}>
-                <GuestHeader1 />
+                <UserHeader />
             </div>
             <div style={{ flex: 1, paddingTop: '75px', paddingBottom: '40px' }}>
                 <Outlet />
@@ -19,10 +19,10 @@ const GuestLayout = () => {
                 backgroundColor: 'black',
                 color: 'white'
             }}>
-                <GuestFooter />
+                <UserFooter />
             </div>
         </div>
     );
 };
 
-export default GuestLayout;
+export default UserLayout;

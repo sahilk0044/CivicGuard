@@ -1,7 +1,7 @@
 import React from 'react'
 import { GuestNavbar } from './GuestNavbar'
 
-const GuestHeader = () => {
+const GuestHeader1 = () => {
     return (
         <div>
             <GuestNavbar />
@@ -9,4 +9,4 @@ const GuestHeader = () => {
     )
 }
 
-export default GuestHeader
+export default GuestHeader1

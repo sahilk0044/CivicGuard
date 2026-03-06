@@ -76,48 +76,111 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
-/* ================= ADD EMERGENCY CONTACT ================= */
-export const addEmergencyContact = async (req, res) => {
+/* ================= UPDATE USER PROFILE ================= */
+
+export const updateProfile = async (req, res) => {
+
   try {
-    const { name, phone, relationship } = req.body;
+
+    const { name, email, mobile } = req.body;
 
     const user = await User.findById(req.user.id);
 
-    user.emergencyContacts.push({ name, phone, relationship });
+    if (!user) {
+
+      return res.status(404).json({
+        message: "User not found"
+      });
+
+    }
+
+    /* Update fields */
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (mobile) user.mobile = mobile;
 
     await user.save();
 
     res.json({
-      message: "Contact added successfully",
-      contacts: user.emergencyContacts,
+      message: "Profile updated successfully",
+      user
     });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
+
 };
 
+/* ================= ADD EMERGENCY CONTACT ================= */
+export const addEmergencyContact = async (req, res) => {
+  try {
+
+    const { name1, email, phone, relationship } = req.body;
+
+    if (!name1 || !phone) {
+      return res.status(400).json({
+        message: "Name and phone are required"
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    const newContact = {
+      name1,
+      email,
+      phone,
+      relationship
+    };
+
+    user.emergencyContacts.push(newContact);
+
+    await user.save();
+
+    const addedContact =
+      user.emergencyContacts[user.emergencyContacts.length - 1];
+
+    res.status(201).json(addedContact);
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: error.message
+    });
+
+  }
+};
 /* ================= DELETE EMERGENCY CONTACT ================= */
 export const deleteEmergencyContact = async (req, res) => {
   try {
+
     const { contactId } = req.params;
 
     const user = await User.findById(req.user.id);
 
     user.emergencyContacts = user.emergencyContacts.filter(
-      (contact) => contact._id.toString() !== contactId
+      contact => contact._id.toString() !== contactId
     );
 
     await user.save();
 
     res.json({
-      message: "Contact removed",
-      contacts: user.emergencyContacts,
+      message: "Contact deleted successfully"
     });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
 };
-
 export const sendContactMessage = async (req, res) => {
 
   const { name, email, message } = req.body;
@@ -185,4 +248,20 @@ export const sendContactMessage = async (req, res) => {
 
   }
 
+};
+
+export const getContacts = async (req, res) => {
+  try {
+
+    const user = await User.findById(req.user.id).select("emergencyContacts");
+
+    res.json(user.emergencyContacts);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Server error"
+    });
+
+  }
 };

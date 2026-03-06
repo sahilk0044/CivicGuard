@@ -5,7 +5,9 @@ import {
   getUserProfile,
   addEmergencyContact,
   deleteEmergencyContact,
-  sendContactMessage
+  sendContactMessage,
+  getContacts,
+  updateProfile
 } from "../controller/UserController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -27,6 +29,7 @@ UserRouter.use("/contact",sendContactMessage);
 
 // Get logged in user profile
 UserRouter.get("/profile", authMiddleware, getUserProfile);
+UserRouter.put("/update-profile", authMiddleware, updateProfile);
 
 
 /* ================= EMERGENCY CONTACTS ================= */
@@ -34,8 +37,10 @@ UserRouter.get("/profile", authMiddleware, getUserProfile);
 // Add emergency contact
 UserRouter.post("/add-contact", authMiddleware, addEmergencyContact);
 
+UserRouter.get("/contacts", authMiddleware, getContacts);
 // Delete emergency contact
 UserRouter.delete("/delete-contact/:contactId", authMiddleware, deleteEmergencyContact);
+
 
 
 export default UserRouter;
