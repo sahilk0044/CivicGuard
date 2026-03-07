@@ -1,20 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  CircleMarker,
+  useMap
+} from "react-leaflet";
+
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import L from "leaflet";
 
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+/* ================= FIX LEAFLET MARKER ICON ================= */
 
 delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
 });
 
-/* Component to move map to user location */
+/* ================= MAP AUTO CENTER ================= */
 
 function MapUpdater({ position }) {
 
@@ -22,44 +33,48 @@ function MapUpdater({ position }) {
 
   useEffect(() => {
 
-    map.setView(position, 13);
+    if (position) {
+      map.setView(position, 13);
+    }
 
   }, [position, map]);
 
   return null;
 }
 
-const EmergencyMap = () => {
+const EmergencyMap = ({ selectedAlert }) => {
 
   const [location, setLocation] = useState(null);
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
 
-    getLocation();
+    getUserLocation();
     fetchAlerts();
 
   }, []);
 
-  /* Get GPS */
+  /* ================= GET USER GPS LOCATION ================= */
 
-  const getLocation = () => {
+  const getUserLocation = () => {
 
     if (!navigator.geolocation) return;
 
     navigator.geolocation.getCurrentPosition(
 
-      (pos) => {
+      (position) => {
 
         setLocation([
-          pos.coords.latitude,
-          pos.coords.longitude
+          position.coords.latitude,
+          position.coords.longitude
         ]);
 
       },
 
-      (err) => {
-        console.log(err);
+      (error) => {
+
+        console.log("Location error:", error);
+
       },
 
       { enableHighAccuracy: true }
@@ -68,7 +83,7 @@ const EmergencyMap = () => {
 
   };
 
-  /* Fetch alerts */
+  /* ================= FETCH ALERTS ================= */
 
   const fetchAlerts = async () => {
 
@@ -76,80 +91,113 @@ const EmergencyMap = () => {
 
       const token = localStorage.getItem("token");
 
-      const res = await axios.get("/alerts/my-alerts", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get(
+        "http://localhost:8000/api/alerts/my-alerts",
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       setAlerts(res.data);
 
-    } catch (err) {
+    } catch (error) {
 
-      console.log(err);
+      console.log("Error fetching alerts:", error);
 
     }
 
   };
 
-  /* Don't render map until GPS is available */
+  /* ================= DETERMINE MAP CENTER ================= */
 
-  if (!location) {
+  const mapCenter = selectedAlert
+    ? [selectedAlert.latitude, selectedAlert.longitude]
+    : location;
 
-    return <p>Fetching your location...</p>;
+  if (!mapCenter) {
+
+    return (
+      <div style={{ textAlign: "center", padding: "20px" }}>
+        Fetching location...
+      </div>
+    );
 
   }
 
   return (
 
     <MapContainer
-      center={location}
+      center={mapCenter}
       zoom={13}
-      className="leaflet-container"
+      style={{
+        height: "450px",
+        width: "100%",
+        borderRadius: "10px"
+      }}
     >
 
+      {/* ================= OPENSTREETMAP TILE ================= */}
+
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution="&copy; OpenStreetMap contributors"
+        url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
       />
 
-      {/* Update map center */}
+      <MapUpdater position={mapCenter} />
 
-      <MapUpdater position={location} />
+      {/* ================= USER LOCATION ================= */}
 
-      {/* User marker */}
+      {location && (
 
-      <Marker position={location}>
+        <>
+          <Marker position={location}>
+            <Popup>📍 You are here</Popup>
+          </Marker>
 
-        <Popup>📍 You are here</Popup>
+          <CircleMarker
+            center={location}
+            radius={18}
+            pathOptions={{
+              color: "blue",
+              fillOpacity: 0.3
+            }}
+          />
+        </>
 
-      </Marker>
+      )}
 
-      {/* Blue highlight */}
+      {/* ================= ALERT MARKERS ================= */}
 
-      <CircleMarker
-        center={location}
-        radius={18}
-        pathOptions={{ color: "blue", fillOpacity: 0.3 }}
-      />
+      {alerts
+        .filter(alert => alert.latitude && alert.longitude)
+        .map(alert => (
 
-      {/* Alert markers */}
+          <Marker
+            key={alert._id}
+            position={[alert.latitude, alert.longitude]}
+          >
 
-      {alerts.map(alert => (
+            <Popup>
 
-        <Marker
-          key={alert._id}
-          position={[alert.latitude, alert.longitude]}
-        >
+              🚨 Emergency Alert <br/>
 
-          <Popup>
+              Status: {alert.status} <br/>
 
-            🚨 Alert<br/>
+              {new Date(alert.createdAt).toLocaleString()} <br/><br/>
 
-            Status: {alert.status}
+              <a
+                href={`https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open in Google Maps
+              </a>
 
-          </Popup>
+            </Popup>
 
-        </Marker>
+          </Marker>
 
-      ))}
+        ))}
 
     </MapContainer>
 

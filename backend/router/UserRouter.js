@@ -7,7 +7,8 @@ import {
   deleteEmergencyContact,
   sendContactMessage,
   getContacts,
-  updateProfile
+  updateProfile,
+  sendSupportMessage
 } from "../controller/UserController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -22,7 +23,8 @@ UserRouter.post("/register", registerUser);
 // Login User
 UserRouter.post("/login", loginUser);
 
-UserRouter.use("/contact",sendContactMessage);
+UserRouter.post("/contact",sendContactMessage);
+UserRouter.post("/support",sendSupportMessage);
 
 
 /* ================= USER PROFILE ================= */

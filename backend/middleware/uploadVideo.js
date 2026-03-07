@@ -1,19 +1,50 @@
 import multer from "multer";
-import path from "path";
+import fs from "fs";
+
+/* Ensure folder exists */
+
+const uploadPath = "uploads/videos";
+
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+/* Storage */
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/videos");
+    cb(null, uploadPath);
   },
 
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+    const fileName = `alert-${Date.now()}.webm`;
+    cb(null, fileName);
+  }
 });
+
+/* Allow only video files */
+
+const fileFilter = (req, file, cb) => {
+
+  const allowedTypes = [
+    "video/webm",
+    "video/mp4",
+    "video/ogg"
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only video files are allowed"), false);
+  }
+};
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024 // 50MB
+  }
 });
 
 export default upload;

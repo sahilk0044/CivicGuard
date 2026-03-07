@@ -18,6 +18,8 @@ const transporter = nodemailer.createTransport({
 
 /* ================= SEND EMERGENCY ALERT ================= */
 
+/* ================= SEND EMERGENCY ALERT ================= */
+
 export const sendAlert = async (req, res) => {
   try {
 
@@ -29,18 +31,32 @@ export const sendAlert = async (req, res) => {
       });
     }
 
+    /* ================= PREVENT DUPLICATE ALERT ================= */
+
+    const existingAlert = await Alert.findOne({
+      user: req.user.id,
+      status: "pending"
+    });
+
+    if (existingAlert) {
+      return res.status(400).json({
+        message: "An active emergency alert already exists",
+      });
+    }
+
     const video = req.file ? req.file.path : null;
 
-    /* SAVE ALERT */
+    /* ================= SAVE ALERT ================= */
 
     const alert = await Alert.create({
       user: req.user.id,
       latitude,
       longitude,
       video,
+      status: "pending"
     });
 
-    /* GET USER */
+    /* ================= GET USER ================= */
 
     const user = await User.findById(req.user.id);
 
@@ -64,7 +80,7 @@ export const sendAlert = async (req, res) => {
       .filter((auth) => auth.email)
       .map((auth) => auth.email);
 
-    /* ================= MERGE ALL RECIPIENT EMAILS ================= */
+    /* ================= MERGE EMAIL LIST ================= */
 
     const recipients = [...new Set([...contactEmails, ...authorityEmails])];
 
@@ -114,7 +130,6 @@ Please provide immediate assistance.
 
   }
 };
-
 /* ================= USER ALERT HISTORY ================= */
 
 export const getUserAlerts = async (req, res) => {
@@ -133,6 +148,7 @@ export const getUserAlerts = async (req, res) => {
 
   }
 };
+
 
 /* ================= GET ALL ALERTS ================= */
 
@@ -187,4 +203,3 @@ export const updateAlertStatus = async (req, res) => {
 
   }
 };
-console.log(process.env.EMAIL, process.env.EMAIL_PASSWORD);

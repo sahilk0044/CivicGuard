@@ -10,6 +10,9 @@ import UserLayout from "./components/userLayout/UserLayout";
 import Dashboard from "./components/userLayout/Dashboard";
 import Contacts from "./components/userLayout/Contacts";
 import Profile from "./components/userLayout/Profile";
+import Support from "./components/userLayout/Support";
+import EmergencyAlert from "./components/userLayout/EmergencyAlert";
+import MyAlerts from "./components/userLayout/MyAlerts";
 
 
 function App() {
@@ -29,6 +32,9 @@ function App() {
       <Route path="/user/dashboard" element={<Dashboard/>}/>
       <Route path="/user/contacts" element={<Contacts/>}/>
       <Route path="/user/profile" element={<Profile/>}/>
+      <Route path="/user/support" element={<Support/>}/>
+      <Route path="/user/emergency" element={<EmergencyAlert/>}/>
+      <Route path="/user/alerts" element={<MyAlerts/>}/>
     </Route>
 
 

@@ -33,5 +33,6 @@ mongoose.connect(URL)
   app.use("/api/users",UserRouter);
   app.use("/api/alerts",AlertRouter);
   app.use("/uploads", express.static("uploads"));
+  app.use("/videos", express.static("uploads/videos"));
   app.use("/api/admin",AdminRouter);
   app.use("/api/authority",AuthorityRouter);
