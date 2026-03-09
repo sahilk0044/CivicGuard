@@ -60,3 +60,23 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getAlertsChart = async (req, res) => {
+  try {
+
+    const chartData = await Alert.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          total: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    res.json(chartData);
+
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};

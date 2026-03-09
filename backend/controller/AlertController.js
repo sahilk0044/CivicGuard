@@ -1,153 +1,45 @@
-import dotenv from "dotenv";
-dotenv.config();
 import Alert from "../models/Alert.js";
 import User from "../models/User.js";
 import Authority from "../models/Authority.js";
-import nodemailer from "nodemailer";
-
-/* ================= EMAIL TRANSPORT ================= */
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
 
 
-/* ================= SEND EMERGENCY ALERT ================= */
-
-/* ================= SEND EMERGENCY ALERT ================= */
+/* ================= CREATE ALERT ================= */
 
 export const sendAlert = async (req, res) => {
   try {
 
-    const { latitude, longitude } = req.body;
-
-    if (!latitude || !longitude) {
-      return res.status(400).json({
-        message: "Latitude and Longitude are required",
-      });
-    }
-
-    /* ================= PREVENT DUPLICATE ALERT ================= */
-
-    const existingAlert = await Alert.findOne({
-      user: req.user.id,
-      status: "pending"
-    });
-
-    if (existingAlert) {
-      return res.status(400).json({
-        message: "An active emergency alert already exists",
-      });
-    }
+    const { type, description, latitude, longitude, location } = req.body;
 
     const video = req.file ? req.file.path : null;
 
-    /* ================= SAVE ALERT ================= */
-
-    const alert = await Alert.create({
-      user: req.user.id,
+    const alert = new Alert({
+      user: req.user._id,
+      type,
+      description,
       latitude,
       longitude,
+      location,
       video,
-      status: "pending"
+      status: "active"
     });
 
-    /* ================= GET USER ================= */
+    await alert.save();
 
-    const user = await User.findById(req.user.id);
+    /* ===== REAL TIME SOCKET EVENT ===== */
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    /* ================= GET EMERGENCY CONTACT EMAILS ================= */
-
-    const contactEmails = user.emergencyContacts
-      ?.filter((contact) => contact.email)
-      .map((contact) => contact.email) || [];
-
-    /* ================= GET AUTHORITY EMAILS ================= */
-
-    const authorities = await Authority.find();
-
-    const authorityEmails = authorities
-      .filter((auth) => auth.email)
-      .map((auth) => auth.email);
-
-    /* ================= MERGE EMAIL LIST ================= */
-
-    const recipients = [...new Set([...contactEmails, ...authorityEmails])];
-
-    console.log("Emergency contacts:", contactEmails);
-    console.log("Authority emails:", authorityEmails);
-    console.log("Recipients:", recipients);
-
-    /* ================= SEND EMAIL ================= */
-
-    if (recipients.length > 0) {
-
-      const mailOptions = {
-        from: process.env.EMAIL,
-        to: recipients.join(","),
-        subject: "🚨 Emergency Alert Triggered",
-        text: `
-🚨 Emergency Alert!
-
-User: ${user.name}
-Mobile: ${user.mobile}
-
-Location:
-Latitude: ${latitude}
-Longitude: ${longitude}
-
-Please provide immediate assistance.
-        `,
-      };
-
-      await transporter.sendMail(mailOptions);
-
-      console.log("Emergency alert email sent");
-    }
+    const io = req.app.get("io");
+    io.emit("newAlert", alert);
 
     res.status(201).json({
-      message: "Emergency alert created successfully",
-      alert,
+      message: "Emergency alert sent successfully",
+      alert
     });
 
   } catch (error) {
-
-    console.error("Alert Error:", error);
-
-    res.status(500).json({
-      message: "Error sending alert",
-    });
-
+    res.status(500).json({ message: error.message });
   }
 };
-/* ================= USER ALERT HISTORY ================= */
 
-export const getUserAlerts = async (req, res) => {
-  try {
-
-    const alerts = await Alert.find({ user: req.user.id })
-      .sort({ createdAt: -1 });
-
-    res.json(alerts);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Error fetching alerts",
-    });
-
-  }
-};
 
 
 /* ================= GET ALL ALERTS ================= */
@@ -156,50 +48,142 @@ export const getAllAlerts = async (req, res) => {
   try {
 
     const alerts = await Alert.find()
-      .populate("user", "name email mobile")
+      .populate("user", "name email")
       .sort({ createdAt: -1 });
 
     res.json(alerts);
 
   } catch (error) {
-
-    res.status(500).json({
-      message: "Error fetching alerts",
-    });
-
+    res.status(500).json({ message: error.message });
   }
 };
+
+
+
+/* ================= GET USER ALERTS ================= */
+
+export const getUserAlerts = async (req, res) => {
+  try {
+
+    const alerts = await Alert.find({ user: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.json(alerts);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 
 /* ================= UPDATE ALERT STATUS ================= */
 
 export const updateAlertStatus = async (req, res) => {
   try {
 
-    const { id } = req.params;
     const { status } = req.body;
 
-    const alert = await Alert.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+    const alert = await Alert.findById(req.params.id);
 
     if (!alert) {
-      return res.status(404).json({
-        message: "Alert not found",
-      });
+      return res.status(404).json({ message: "Alert not found" });
     }
+
+    alert.status = status;
+
+    await alert.save();
+
+    /* REAL-TIME UPDATE */
+
+    const io = req.app.get("io");
+    io.emit("alertUpdated", alert);
 
     res.json({
       message: "Alert status updated",
-      alert,
+      alert
     });
 
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-    res.status(500).json({
-      message: "Error updating alert status",
+
+
+/* ================= DELETE ALERT ================= */
+
+export const deleteAlert = async (req, res) => {
+  try {
+
+    const alert = await Alert.findById(req.params.id);
+
+    if (!alert) {
+      return res.status(404).json({ message: "Alert not found" });
+    }
+
+    await alert.deleteOne();
+
+    res.json({
+      message: "Alert deleted successfully"
     });
 
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+/* ================= DASHBOARD STATS ================= */
+
+export const getDashboardStats = async (req, res) => {
+  try {
+
+    const usersCount = await User.countDocuments();
+
+    const authoritiesCount = await Authority.countDocuments();
+
+    const alertsCount = await Alert.countDocuments({ status: "active" });
+
+    const resolvedCases = await Alert.countDocuments({ status: "resolved" });
+
+    const latestAlerts = await Alert.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    res.json({
+      usersCount,
+      authoritiesCount,
+      alertsCount,
+      resolvedCases,
+      latestAlerts
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+/* ================= ALERT CHART DATA ================= */
+
+export const getAlertsChart = async (req, res) => {
+  try {
+
+    const chartData = await Alert.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          total: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.json(chartData);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
