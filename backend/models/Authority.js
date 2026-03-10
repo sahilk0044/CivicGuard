@@ -20,6 +20,7 @@ const authoritySchema = new mongoose.Schema(
 
     department: {
       type: String,
+      enum: ["police", "medical", "fire"],
       required: true,
     },
 
@@ -29,8 +30,14 @@ const authoritySchema = new mongoose.Schema(
     },
 
     location: {
-      latitude: Number,
-      longitude: Number,
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
     },
 
     role: {
@@ -40,5 +47,14 @@ const authoritySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+/* ========= GEO INDEX FOR NEAREST AUTHORITY SEARCH ========= */
+
+authoritySchema.index({
+  "location.latitude": 1,
+  "location.longitude": 1,
+});
+
 
 export default mongoose.model("Authority", authoritySchema);

@@ -15,6 +15,9 @@ import EmergencyAlert from "./components/userLayout/EmergencyAlert";
 import MyAlerts from "./components/userLayout/MyAlerts";
 import AdminLayout from "./components/adminLayout/AdminLayout";
 import AdminDashboard from "./components/adminLayout/AdminDashboard";
+import ManageUsers from "./components/adminLayout/ManageUsers";
+import ManageAuthorities from "./components/adminLayout/ManageAuthorities";
+import ManageAlerts from "./components/adminLayout/ManageAlerts";
 
 
 function App() {
@@ -41,6 +44,9 @@ function App() {
 
     <Route path="/admin" element={<AdminLayout/>}>
     <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
+    <Route path="/admin/users" element={<ManageUsers/>}/>
+    <Route path="/admin/authorities" element={<ManageAuthorities/>}/>
+    <Route path="/admin/alerts" element={<ManageAlerts/>}/>
     
     </Route>
 

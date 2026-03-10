@@ -111,3 +111,47 @@ export const resolveAlert = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+/* ================= GET ALL AUTHORITIES ================= */
+
+export const getAllAuthorities = async (req, res) => {
+
+  try {
+
+    const authorities = await Authority.find().sort({ createdAt: -1 });
+
+    res.json(authorities);
+
+  } catch (error) {
+
+    res.status(500).json({ message: error.message });
+
+  }
+
+};
+
+
+
+/* ================= DELETE AUTHORITY ================= */
+
+export const deleteAuthority = async (req, res) => {
+
+  try {
+
+    const authority = await Authority.findByIdAndDelete(req.params.id);
+
+    if (!authority) {
+      return res.status(404).json({ message: "Authority not found" });
+    }
+
+    res.json({ message: "Authority deleted successfully" });
+
+  } catch (error) {
+
+    res.status(500).json({ message: error.message });
+
+  }
+
+};

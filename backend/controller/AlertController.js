@@ -8,31 +8,73 @@ import Authority from "../models/Authority.js";
 export const sendAlert = async (req, res) => {
   try {
 
-    const { type, description, latitude, longitude, location } = req.body;
+    const { type, latitude, longitude, locationName } = req.body;
 
     const video = req.file ? req.file.path : null;
+
+    /* STEP 1: Create alert */
 
     const alert = new Alert({
       user: req.user._id,
       type,
-      description,
       latitude,
       longitude,
-      location,
+      locationName,
       video,
       status: "active"
     });
 
+    /* STEP 2: Find authorities of same department */
+
+    const authorities = await Authority.find({
+      department: type
+    });
+
+    let nearestAuthority = null;
+    let minDistance = Infinity;
+
+    /* STEP 3: Find nearest authority */
+
+    authorities.forEach((auth) => {
+
+      const distance = Math.sqrt(
+        Math.pow(latitude - auth.location.latitude, 2) +
+        Math.pow(longitude - auth.location.longitude, 2)
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestAuthority = auth;
+      }
+
+    });
+
+    /* STEP 4: Assign authority */
+
+    if (nearestAuthority) {
+      alert.authority = nearestAuthority._id;
+      alert.status = "assigned";
+    }
+
     await alert.save();
 
-    /* ===== REAL TIME SOCKET EVENT ===== */
+    /* STEP 5: REAL TIME SOCKET EVENTS */
 
     const io = req.app.get("io");
+
     io.emit("newAlert", alert);
 
+    if (nearestAuthority) {
+      io.emit("alertAssigned", {
+        alert,
+        authorityId: nearestAuthority._id
+      });
+    }
+
     res.status(201).json({
-      message: "Emergency alert sent successfully",
-      alert
+      message: "Emergency alert sent and authority assigned",
+      alert,
+      assignedAuthority: nearestAuthority
     });
 
   } catch (error) {
@@ -45,30 +87,34 @@ export const sendAlert = async (req, res) => {
 /* ================= GET ALL ALERTS ================= */
 
 export const getAllAlerts = async (req, res) => {
+
   try {
 
     const alerts = await Alert.find()
-      .populate("user", "name email")
+      .populate("user", "name email phone")
+      .populate("authority", "name department")
       .sort({ createdAt: -1 });
 
     res.json(alerts);
 
   } catch (error) {
+
     res.status(500).json({ message: error.message });
+
   }
+
 };
-
-
-
 /* ================= GET USER ALERTS ================= */
 
 export const getUserAlerts = async (req, res) => {
   try {
 
-    const alerts = await Alert.find({ user: req.user._id })
-      .sort({ createdAt: -1 });
+    const alerts = await Alert.find({
+      user: req.user._id
+    }).sort({ createdAt: -1 });
 
     res.json(alerts);
+    console.log("User requesting alerts:", req.user._id);
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -94,9 +140,8 @@ export const updateAlertStatus = async (req, res) => {
 
     await alert.save();
 
-    /* REAL-TIME UPDATE */
-
     const io = req.app.get("io");
+
     io.emit("alertUpdated", alert);
 
     res.json({
@@ -141,11 +186,8 @@ export const getDashboardStats = async (req, res) => {
   try {
 
     const usersCount = await User.countDocuments();
-
     const authoritiesCount = await Authority.countDocuments();
-
     const alertsCount = await Alert.countDocuments({ status: "active" });
-
     const resolvedCases = await Alert.countDocuments({ status: "resolved" });
 
     const latestAlerts = await Alert.find()
@@ -164,6 +206,7 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 /* ================= ALERT CHART DATA ================= */
