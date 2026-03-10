@@ -77,6 +77,7 @@ export const GuestNavbar = () => {
           margin-left: 18px;
           position: relative;
           transition: 0.3s ease;
+          color:white;
         }
 
         .nav-link-custom::after {

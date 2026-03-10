@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Container, Button, Alert, Form } from "react-bootstrap";
+import { Container,  Alert, Form } from "react-bootstrap";
 import { motion } from "framer-motion";
 import axios from "axios";
 
@@ -336,15 +336,47 @@ const EmergencyAlert = () => {
 
       {!recording && !alertSent && (
 
-        <Button
-          variant="danger"
-          size="lg"
-          onClick={startEmergency}
-        >
-          SEND EMERGENCY ALERT
-        </Button>
+  <motion.div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      marginTop: "20px"
+    }}
+  >
 
-      )}
+    <motion.button
+      onClick={startEmergency}
+
+      whileHover={{
+        scale: 1.08,
+        boxShadow: "0 0 35px rgba(255,0,0,0.9)"
+      }}
+
+      whileTap={{
+        scale: 0.92
+      }}
+
+      style={{
+        width: "160px",
+        height: "160px",
+        borderRadius: "50%",
+        background: "radial-gradient(circle, #ff4d4d, #b30000)",
+        border: "6px solid white",
+        color: "white",
+        fontSize: "34px",
+        fontWeight: "bold",
+        letterSpacing: "3px",
+        cursor: "pointer",
+        boxShadow: "0 0 25px rgba(255,0,0,0.7)",
+        transition: "all 0.3s ease"
+      }}
+    >
+      SOS
+    </motion.button>
+
+  </motion.div>
+
+)}
 
     </Container>
 

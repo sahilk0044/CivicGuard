@@ -42,6 +42,12 @@ UserRouter.post("/add-contact", authMiddleware, addEmergencyContact);
 UserRouter.get("/contacts", authMiddleware, getContacts);
 // Delete emergency contact
 UserRouter.delete("/delete-contact/:contactId", authMiddleware, deleteEmergencyContact);
+UserRouter.get("/verify-token", authMiddleware, (req, res) => {
+  res.json({
+    valid: true,
+    user: req.user
+  });
+});
 
 
 

@@ -230,3 +230,58 @@ export const getAlertsChart = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getReports = async (req, res) => {
+  try {
+
+    /* ALERTS BY TYPE */
+
+    const alertsByType = await Alert.aggregate([
+      {
+        $group: {
+          _id: "$type",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+
+    /* ALERTS PER DAY */
+
+     const topUsers = await Alert.aggregate([
+      {
+        $group: {
+          _id: "$user",
+          alerts: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userInfo"
+        }
+      },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          name: "$userInfo.name",
+          alerts: 1
+        }
+      },
+      { $sort: { alerts: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.json({
+      alertsByType,
+      alertsPerDay,
+      statusReport,
+      topUsers
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

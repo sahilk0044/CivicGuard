@@ -18,9 +18,46 @@ import AdminDashboard from "./components/adminLayout/AdminDashboard";
 import ManageUsers from "./components/adminLayout/ManageUsers";
 import ManageAuthorities from "./components/adminLayout/ManageAuthorities";
 import ManageAlerts from "./components/adminLayout/ManageAlerts";
+import Reports from "./components/adminLayout/Reports";
+import axios from "axios";
+import { useEffect } from "react";
 
 
 function App() {
+  useEffect(() => {
+
+    const verifyToken = async () => {
+
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      try {
+
+        await axios.get(
+          "http://localhost:8000/api/users/verify-token",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        console.log("User already authenticated");
+
+      } catch (error) {
+
+        console.log("Token invalid");
+
+        localStorage.removeItem("token");
+
+      }
+
+    };
+
+    verifyToken();
+
+  }, []);
   return (
   <Routes>
     <Route path="/" element={<GuestLayout/>}>
@@ -49,6 +86,7 @@ function App() {
     <Route path="/admin/users" element={<ManageUsers/>}/>
     <Route path="/admin/authorities" element={<ManageAuthorities/>}/>
     <Route path="/admin/alerts" element={<ManageAlerts/>}/>
+    <Route path="/admin/reports" element={<Reports />} />
     
     </Route>
 

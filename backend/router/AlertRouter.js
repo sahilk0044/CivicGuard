@@ -5,6 +5,7 @@ import {
   getAllAlerts,
   updateAlertStatus,
   deleteAlert,
+  getReports,
 } from "../controller/AlertController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -33,6 +34,8 @@ AlertRouter.get("/all-alerts",getAllAlerts);  //post /api/alerts/all
 
 AlertRouter.put("/resolve/:id", authMiddleware, updateAlertStatus);  //put /api/alerts/resolve/:id
 AlertRouter.delete("/delete/:id", deleteAlert);  
+
+AlertRouter.get("/reports", getReports);
 
 
 export default AlertRouter;
