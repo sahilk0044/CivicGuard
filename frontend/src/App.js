@@ -34,6 +34,7 @@ function App() {
     </Route>
 
     <Route path="/user" element={<UserLayout/>}>
+      <Route index element={<Dashboard/>}/>
       <Route path="/user/dashboard" element={<Dashboard/>}/>
       <Route path="/user/contacts" element={<Contacts/>}/>
       <Route path="/user/profile" element={<Profile/>}/>
@@ -43,6 +44,7 @@ function App() {
     </Route>
 
     <Route path="/admin" element={<AdminLayout/>}>
+    <Route index element={<AdminDashboard/>}/>
     <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
     <Route path="/admin/users" element={<ManageUsers/>}/>
     <Route path="/admin/authorities" element={<ManageAuthorities/>}/>
