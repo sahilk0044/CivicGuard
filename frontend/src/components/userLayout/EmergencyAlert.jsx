@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Container,  Alert, Form } from "react-bootstrap";
+import { Container, Alert, Form } from "react-bootstrap";
 import { motion } from "framer-motion";
 import axios from "axios";
 
@@ -18,239 +18,232 @@ const EmergencyAlert = () => {
 
   const startEmergency = () => {
 
-    if (emergencyLockRef.current) return;
+  if (emergencyLockRef.current) return;
 
-    emergencyLockRef.current = true;
+  emergencyLockRef.current = true;
 
-    setCountdown(3);
+  setCountdown(3);
 
-    const timer = setInterval(() => {
+  let count = 3;
 
-      setCountdown((prev) => {
+  const timer = setInterval(() => {
 
-        if (prev === 1) {
-          clearInterval(timer);
-          activateEmergency();
-          return null;
-        }
+    count -= 1;
 
-        return prev - 1;
+    if (count <= 0) {
 
-      });
+      clearInterval(timer);
+      setCountdown(null);
+      activateEmergency();
 
-    }, 1000);
+    } else {
 
-  };
+      setCountdown(count);
 
+    }
+
+  }, 1000);
+
+};
 
 
   const activateEmergency = async () => {
 
-  try {
-
-    setStatus("Starting camera...");
-    setRecording(true);
-
     let stream;
 
     try {
+
+      setStatus("Starting camera...");
+      setRecording(true);
+
+      /* CAMERA */
 
       stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
 
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      setStatus("Getting location...");
+
+      /* LOCATION */
+
+      await new Promise((resolve) => {
+
+        navigator.geolocation.getCurrentPosition(
+
+          async (position) => {
+
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            console.log("Latitude:", lat);
+            console.log("Longitude:", lon);
+
+            locationRef.current.latitude = lat;
+            locationRef.current.longitude = lon;
+
+            try {
+
+              const response = await axios.get(
+                `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+              );
+
+              locationRef.current.locationName =
+                response.data.display_name || "Unknown Location";
+
+            } catch {
+
+              locationRef.current.locationName = "Unknown Location";
+
+            }
+
+            resolve();
+
+          },
+
+          () => {
+
+            setStatus("Location unavailable. Sending alert without location.");
+            resolve();
+
+          },
+
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+
+        );
+
+      });
+
+
+      /* MEDIA RECORDER */
+
+      let recorder;
+
+      if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
+        recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      }
+      else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8")) {
+        recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8" });
+      }
+      else {
+        recorder = new MediaRecorder(stream);
+      }
+
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+
+        if (event.data && event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+
+      };
+
+      recorder.onstop = async () => {
+
+        try {
+
+          const blob = new Blob(chunksRef.current, {
+            type: "video/webm"
+          });
+
+          const file = new File(
+            [blob],
+            `alert-${Date.now()}.webm`,
+            { type: "video/webm" }
+          );
+
+          const formData = new FormData();
+
+          formData.append("video", file);
+          formData.append("type", alertType);
+          formData.append("latitude", locationRef.current.latitude);
+          formData.append("longitude", locationRef.current.longitude);
+          formData.append("locationName", locationRef.current.locationName);
+
+          const token = localStorage.getItem("token");
+
+          await axios.post(
+            "http://localhost:8000/api/alerts/send-alert",
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
+              }
+            }
+          );
+
+          stream.getTracks().forEach(track => track.stop());
+
+          chunksRef.current = [];
+          setRecording(false);
+          setAlertSent(true);
+          setStatus("Alert sent successfully");
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = null;
+          }
+
+        } catch (error) {
+
+          console.error(error);
+          setStatus("Error sending alert");
+
+        }
+
+      };
+
+      recorder.start();
+
+      setStatus("Recording emergency video...");
+
+      setTimeout(() => {
+
+        if (recorder && recorder.state === "recording") {
+          setStatus("Uploading emergency alert...");
+          recorder.stop();
+        }
+
+      }, 15000);
+
     } catch (error) {
+
+      console.error(error);
+
+      setStatus("Camera access denied. Please allow camera permissions.");
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
 
       setRecording(false);
       emergencyLockRef.current = false;
 
-      setStatus("Camera & microphone permission required. Click 'SEND EMERGENCY ALERT' again after allowing access.");
-
-      return;
-
     }
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-    }
-
-    /* GET LOCATION */
-
-    await new Promise((resolve, reject) => {
-
-      navigator.geolocation.getCurrentPosition(
-
-        async (position) => {
-
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-
-          locationRef.current.latitude = lat;
-          locationRef.current.longitude = lon;
-
-          try {
-
-            /* REVERSE GEOCODING */
-
-            const response = await axios.get(
-              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
-            );
-
-            locationRef.current.locationName =
-              response.data.display_name || "Unknown Location";
-
-          } catch (error) {
-
-            console.error("Reverse geocoding failed");
-            locationRef.current.locationName = "Unknown Location";
-
-          }
-
-          resolve();
-
-        },
-
-        (error) => {
-
-          setRecording(false);
-          emergencyLockRef.current = false;
-
-          setStatus("Location permission required. Please allow location and press the alert button again.");
-
-          reject();
-
-        }
-
-      );
-
-    });
-
-    /* MEDIA RECORDER SETUP */
-
-    let recorder;
-
-    if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
-      recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
-    }
-    else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8")) {
-      recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8" });
-    }
-    else {
-      recorder = new MediaRecorder(stream);
-    }
-
-    chunksRef.current = [];
-
-    recorder.ondataavailable = (event) => {
-
-      if (event.data && event.data.size > 0) {
-        chunksRef.current.push(event.data);
-      }
-
-    };
-
-    recorder.onstop = async () => {
-
-      try {
-
-        const blob = new Blob(chunksRef.current, {
-          type: "video/webm"
-        });
-
-        const file = new File(
-          [blob],
-          `alert-${Date.now()}.webm`,
-          { type: "video/webm" }
-        );
-
-        const formData = new FormData();
-
-        formData.append("video", file);
-        formData.append("type", alertType);
-        formData.append("latitude", locationRef.current.latitude);
-        formData.append("longitude", locationRef.current.longitude);
-
-        formData.append(
-          "locationName",
-          locationRef.current.locationName
-        );
-
-        const token = localStorage.getItem("token");
-
-        await axios.post(
-          "http://localhost:8000/api/alerts/send-alert",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data"
-            }
-          }
-        );
-
-        stream.getTracks().forEach(track => track.stop());
-
-        chunksRef.current = [];
-        setRecording(false);
-        setAlertSent(true);
-        setStatus("Alert sent successfully");
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = null;
-        }
-
-      } catch (error) {
-
-        console.error(error);
-        setStatus("Error sending alert");
-
-      }
-
-    };
-
-    recorder.start();
-
-    setStatus("Recording emergency video...");
-
-    /* AUTO STOP AFTER 15 SECONDS */
-
-    setTimeout(() => {
-
-      if (recorder && recorder.state === "recording") {
-        setStatus("Uploading emergency alert...");
-        recorder.stop();
-      }
-
-    }, 15000);
-
-  } catch (error) {
-
-    console.error(error);
-    setStatus("Camera or location permission denied");
-    emergencyLockRef.current = false;
-
-  }
-
-};
+  };
 
 
   return (
 
     <Container className="text-center mt-5">
 
-      <motion.h1
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-      >
+      <motion.h1 initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
         🚨 Emergency Alert
       </motion.h1>
 
       <p>If you are in danger press the alert button.</p>
 
       {status && <Alert variant="warning">{status}</Alert>}
-
-      {/* ALERT TYPE */}
 
       {!recording && !alertSent && (
 
@@ -271,8 +264,6 @@ const EmergencyAlert = () => {
 
       )}
 
-      {/* COUNTDOWN */}
-
       {countdown && (
 
         <motion.h1
@@ -284,8 +275,6 @@ const EmergencyAlert = () => {
         </motion.h1>
 
       )}
-
-      {/* RECORDING VIDEO */}
 
       {!alertSent && (
 
@@ -313,14 +302,9 @@ const EmergencyAlert = () => {
 
       )}
 
-      {/* SUCCESS MESSAGE */}
-
       {alertSent && (
 
-        <motion.div
-          initial={{ scale: 0.5 }}
-          animate={{ scale: 1 }}
-        >
+        <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }}>
 
           <h1 style={{ color: "green", fontSize: "48px" }}>
             🚓 HELP IS ON THE WAY
@@ -336,47 +320,37 @@ const EmergencyAlert = () => {
 
       {!recording && !alertSent && (
 
-  <motion.div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      marginTop: "20px"
-    }}
-  >
+        <motion.div
+          style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
+        >
 
-    <motion.button
-      onClick={startEmergency}
+          <motion.button
+            onClick={startEmergency}
+            whileHover={{
+              scale: 1.08,
+              boxShadow: "0 0 35px rgba(255,0,0,0.9)"
+            }}
+            whileTap={{ scale: 0.92 }}
+            style={{
+              width: "160px",
+              height: "160px",
+              borderRadius: "50%",
+              background: "radial-gradient(circle, #ff4d4d, #b30000)",
+              border: "6px solid white",
+              color: "white",
+              fontSize: "34px",
+              fontWeight: "bold",
+              letterSpacing: "3px",
+              cursor: "pointer",
+              boxShadow: "0 0 25px rgba(255,0,0,0.7)"
+            }}
+          >
+            SOS
+          </motion.button>
 
-      whileHover={{
-        scale: 1.08,
-        boxShadow: "0 0 35px rgba(255,0,0,0.9)"
-      }}
+        </motion.div>
 
-      whileTap={{
-        scale: 0.92
-      }}
-
-      style={{
-        width: "160px",
-        height: "160px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, #ff4d4d, #b30000)",
-        border: "6px solid white",
-        color: "white",
-        fontSize: "34px",
-        fontWeight: "bold",
-        letterSpacing: "3px",
-        cursor: "pointer",
-        boxShadow: "0 0 25px rgba(255,0,0,0.7)",
-        transition: "all 0.3s ease"
-      }}
-    >
-      SOS
-    </motion.button>
-
-  </motion.div>
-
-)}
+      )}
 
     </Container>
 

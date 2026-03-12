@@ -80,3 +80,64 @@ export const getAlertsChart = async (req, res) => {
     res.status(500).json(error.message);
   }
 };
+
+/* ================= ADD AUTHORITY (ADMIN) ================= */
+
+export const addAuthority = async (req, res) => {
+
+  try {
+
+    const {
+      name,
+      email,
+      phone,
+      department,
+      password,
+      location
+    } = req.body;
+
+    /* CHECK EXISTING AUTHORITY */
+
+    const existingAuthority = await Authority.findOne({ email });
+
+    if (existingAuthority) {
+      return res.status(400).json({
+        message: "Authority with this email already exists"
+      });
+    }
+
+    /* HASH PASSWORD */
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    /* CREATE AUTHORITY */
+
+    const authority = new Authority({
+      name,
+      email,
+      phone,
+      department,
+      password: hashedPassword,
+      location: {
+        latitude: location.latitude,
+        longitude: location.longitude
+      },
+      role: "authority"
+    });
+
+    await authority.save();
+
+    res.status(201).json({
+      message: "Authority added successfully",
+      authority
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};

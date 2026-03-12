@@ -21,6 +21,7 @@ import ManageAlerts from "./components/adminLayout/ManageAlerts";
 import Reports from "./components/adminLayout/Reports";
 import axios from "axios";
 import { useEffect } from "react";
+import Settings from "./components/adminLayout/Settings";
 
 
 function App() {
@@ -87,6 +88,7 @@ function App() {
     <Route path="/admin/authorities" element={<ManageAuthorities/>}/>
     <Route path="/admin/alerts" element={<ManageAlerts/>}/>
     <Route path="/admin/reports" element={<Reports />} />
+    <Route path="/admin/settings" element={<Settings />} />
     
     </Route>
 

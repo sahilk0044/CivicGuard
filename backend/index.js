@@ -11,6 +11,7 @@ import UserRouter from "./router/UserRouter.js";
 import AlertRouter from "./router/AlertRouter.js";
 import AdminRouter from "./router/AdminRouter.js";
 import AuthorityRouter from "./router/AuthorityRouter.js";
+import SettingsRouter from "./router/SettingsRouter.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/users", UserRouter);
 app.use("/api/alerts", AlertRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/authority", AuthorityRouter);
+app.use("/api/setting", SettingsRouter);
 
 app.use("/uploads", express.static("uploads"));
 app.use("/videos", express.static("uploads/videos"));

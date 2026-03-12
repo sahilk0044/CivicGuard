@@ -2,6 +2,27 @@ import Alert from "../models/Alert.js";
 import User from "../models/User.js";
 import Authority from "../models/Authority.js";
 
+/* ================= DISTANCE FUNCTION ================= */
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
+  const R = 6371; // Earth radius in KM
+
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // distance in KM
+}
+
 
 /* ================= CREATE ALERT ================= */
 
@@ -11,8 +32,6 @@ export const sendAlert = async (req, res) => {
     const { type, latitude, longitude, locationName } = req.body;
 
     const video = req.file ? req.file.path : null;
-
-    /* STEP 1: Create alert */
 
     const alert = new Alert({
       user: req.user._id,
@@ -37,9 +56,13 @@ export const sendAlert = async (req, res) => {
 
     authorities.forEach((auth) => {
 
-      const distance = Math.sqrt(
-        Math.pow(latitude - auth.location.latitude, 2) +
-        Math.pow(longitude - auth.location.longitude, 2)
+      if (!auth.location) return;
+
+      const distance = calculateDistance(
+        latitude,
+        longitude,
+        auth.location.latitude,
+        auth.location.longitude
       );
 
       if (distance < minDistance) {
@@ -104,6 +127,9 @@ export const getAllAlerts = async (req, res) => {
   }
 
 };
+
+
+
 /* ================= GET USER ALERTS ================= */
 
 export const getUserAlerts = async (req, res) => {
@@ -114,6 +140,7 @@ export const getUserAlerts = async (req, res) => {
     }).sort({ createdAt: -1 });
 
     res.json(alerts);
+
     console.log("User requesting alerts:", req.user._id);
 
   } catch (error) {
@@ -231,10 +258,12 @@ export const getAlertsChart = async (req, res) => {
   }
 };
 
+
+
+/* ================= REPORTS ================= */
+
 export const getReports = async (req, res) => {
   try {
-
-    /* ALERTS BY TYPE */
 
     const alertsByType = await Alert.aggregate([
       {
@@ -245,10 +274,26 @@ export const getReports = async (req, res) => {
       }
     ]);
 
+    const alertsPerDay = await Alert.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
 
-    /* ALERTS PER DAY */
+    const statusReport = await Alert.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-     const topUsers = await Alert.aggregate([
+    const topUsers = await Alert.aggregate([
       {
         $group: {
           _id: "$user",
@@ -266,7 +311,7 @@ export const getReports = async (req, res) => {
       { $unwind: "$userInfo" },
       {
         $project: {
-          name: "$userInfo.name",
+          _id: "$userInfo.name",
           alerts: 1
         }
       },

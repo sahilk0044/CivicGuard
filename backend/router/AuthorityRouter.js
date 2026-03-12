@@ -27,6 +27,6 @@ AuthorityRouter.get("/alerts", authMiddleware, getAuthorityAlerts);  //get /api/
 
 AuthorityRouter.put("/resolve/:id", authMiddleware, resolveAlert);  //put /api/authority/resolve/:id
 AuthorityRouter.get("/authorities",getAllAuthorities);
-AuthorityRouter.get("/authorities/:id",deleteAuthority);
+AuthorityRouter.delete("/authorities/:id",deleteAuthority);
 
 export default AuthorityRouter;
