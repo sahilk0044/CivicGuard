@@ -15,12 +15,19 @@ export const GuestNavbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // CLOSE NAVBAR ON MOBILE AFTER CLICK
+  const handleNavClick = () => {
+    const navbar = document.getElementById("responsive-navbar-nav");
+
+    if (navbar && navbar.classList.contains("show")) {
+      navbar.classList.remove("show");
+    }
+  };
+
   return (
     <>
       <style>
         {`
-
-        /* ================= NAVBAR ================= */
 
         .custom-navbar {
           transition: all 0.3s ease;
@@ -36,8 +43,6 @@ export const GuestNavbar = () => {
         .navbar-shadow {
           box-shadow: 0 6px 20px rgba(0,0,0,0.35);
         }
-
-        /* ================= BRAND ================= */
 
         .brand-container {
           display: flex;
@@ -68,8 +73,6 @@ export const GuestNavbar = () => {
         .brand-guard {
           color: #ffd700;
         }
-
-        /* ================= NAV LINKS ================= */
 
         .nav-link-custom {
           font-size: 16px;
@@ -107,8 +110,6 @@ export const GuestNavbar = () => {
           width: 100%;
         }
 
-        /* ================= RESPONSIVE ================= */
-
         @media (max-width: 992px) {
 
           .nav-link-custom {
@@ -131,8 +132,12 @@ export const GuestNavbar = () => {
 
           {/* BRAND */}
 
-          <Navbar.Brand as={NavLink} to="/" className="brand-container">
-
+          <Navbar.Brand
+            as={NavLink}
+            to="/"
+            className="brand-container"
+            onClick={handleNavClick}
+          >
             <img
               src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
               alt="CivicGuard"
@@ -143,36 +148,69 @@ export const GuestNavbar = () => {
               <span className="brand-civic">Civic</span>
               <span className="brand-guard">Guard</span>
             </span>
-
           </Navbar.Brand>
 
+          {/* MOBILE TOGGLE */}
+
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+
+          {/* NAV LINKS */}
 
           <Navbar.Collapse id="responsive-navbar-nav">
 
             <Nav className="ms-auto">
 
-              <Nav.Link as={NavLink} to="/home" className="nav-link-custom">
+              <Nav.Link
+                as={NavLink}
+                to="/home"
+                onClick={handleNavClick}
+                className="nav-link-custom"
+              >
                 Home
               </Nav.Link>
 
-              <Nav.Link as={NavLink} to="/about" className="nav-link-custom">
+              <Nav.Link
+                as={NavLink}
+                to="/about"
+                onClick={handleNavClick}
+                className="nav-link-custom"
+              >
                 About
               </Nav.Link>
 
-              <Nav.Link as={NavLink} to="/features" className="nav-link-custom">
+              <Nav.Link
+                as={NavLink}
+                to="/features"
+                onClick={handleNavClick}
+                className="nav-link-custom"
+              >
                 Features
               </Nav.Link>
 
-              <Nav.Link as={NavLink} to="/contact" className="nav-link-custom">
+              <Nav.Link
+                as={NavLink}
+                to="/contact"
+                onClick={handleNavClick}
+                className="nav-link-custom"
+              >
                 Contact
               </Nav.Link>
 
-              <Nav.Link as={NavLink} to="/register" className="nav-link-custom">
+              <Nav.Link
+                as={NavLink}
+                to="/register"
+                onClick={handleNavClick}
+                className="nav-link-custom"
+              >
                 Register
               </Nav.Link>
 
-              <Nav.Link as={NavLink} to="/login" className="nav-link-custom">
+              <Nav.Link
+                as={NavLink}
+                to="/login"
+                onClick={handleNavClick}
+                className="nav-link-custom"
+              >
                 Login
               </Nav.Link>
 

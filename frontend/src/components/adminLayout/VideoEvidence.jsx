@@ -8,11 +8,13 @@ const VideoEvidence = ({ alerts = [] }) => {
     return (
       <div
         style={{
-          flex: 1,
+          width: "100%",
+          minWidth: "0",
           padding: "20px",
           background: "rgba(255,255,255,0.05)",
           borderRadius: "12px",
-          color: "white"
+          color: "white",
+          boxSizing: "border-box"
         }}
       >
         <h5>Video Evidence</h5>
@@ -24,17 +26,26 @@ const VideoEvidence = ({ alerts = [] }) => {
   return (
     <div
       style={{
-        flex: 1,
+        width: "100%",
+        minWidth: "0",
         padding: "20px",
         background: "rgba(255,255,255,0.05)",
         borderRadius: "12px",
-        color: "white"
+        color: "white",
+        boxSizing: "border-box"
       }}
     >
 
-      <h5>Video Evidence</h5>
+      <h5 style={{ marginBottom: "10px" }}>Video Evidence</h5>
 
-      <video width="100%" controls>
+      <video
+        controls
+        style={{
+          width: "100%",
+          maxWidth: "100%",
+          borderRadius: "8px"
+        }}
+      >
         <source src={`http://localhost:2000/${videoAlert.video}`} />
       </video>
 

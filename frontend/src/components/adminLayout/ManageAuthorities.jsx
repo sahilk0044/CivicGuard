@@ -10,7 +10,6 @@ const ManageAuthorities = () => {
   const [authorities, setAuthorities] = useState([]);
   const [selectedAuthority, setSelectedAuthority] = useState(null);
 
-
   useEffect(() => {
 
     AOS.init({ duration: 800 });
@@ -18,8 +17,6 @@ const ManageAuthorities = () => {
     fetchAuthorities();
 
   }, []);
-
-
 
   const fetchAuthorities = async () => {
 
@@ -30,8 +27,6 @@ const ManageAuthorities = () => {
     setAuthorities(res.data);
 
   };
-
-
 
   const deleteAuthority = async () => {
 
@@ -55,29 +50,30 @@ const ManageAuthorities = () => {
 
   };
 
-
-
   return (
 
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ color: "white" }}
+      style={{
+        color: "white",
+        width: "100%",
+        boxSizing: "border-box"
+      }}
     >
 
       <h2 style={{ marginBottom: "20px" }}>
         🛡 Authority Management
       </h2>
 
-
-
       {/* AUTHORITY GRID */}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
-          gap: "20px"
+          gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))",
+          gap: "20px",
+          width: "100%"
         }}
       >
 
@@ -92,7 +88,9 @@ const ManageAuthorities = () => {
               borderRadius: "14px",
               background: "rgba(255,255,255,0.05)",
               backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.1)"
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxSizing: "border-box",
+              wordBreak: "break-word"
             }}
           >
 
@@ -110,8 +108,6 @@ const ManageAuthorities = () => {
               <FaPhone /> {authority.mobile}
             </p>
 
-
-
             <button
               onClick={() => setSelectedAuthority(authority)}
               style={{
@@ -121,7 +117,8 @@ const ManageAuthorities = () => {
                 padding: "8px",
                 borderRadius: "8px",
                 color: "white",
-                cursor: "pointer"
+                cursor: "pointer",
+                width: "100%"
               }}
             >
               <FaTrash /> Delete
@@ -132,7 +129,6 @@ const ManageAuthorities = () => {
         ))}
 
       </div>
-
 
 
       {/* DELETE MODAL */}
@@ -149,7 +145,8 @@ const ManageAuthorities = () => {
             background: "rgba(0,0,0,0.6)",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            padding: "20px"
           }}
         >
 
@@ -160,8 +157,10 @@ const ManageAuthorities = () => {
               background: "#0f172a",
               padding: "30px",
               borderRadius: "12px",
-              width: "350px",
-              textAlign: "center"
+              width: "100%",
+              maxWidth: "350px",
+              textAlign: "center",
+              boxSizing: "border-box"
             }}
           >
 
@@ -178,7 +177,8 @@ const ManageAuthorities = () => {
                 marginTop: "20px",
                 display: "flex",
                 gap: "10px",
-                justifyContent: "center"
+                justifyContent: "center",
+                flexWrap: "wrap"
               }}
             >
 

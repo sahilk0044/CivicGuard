@@ -5,14 +5,20 @@ const AlertsFeed = ({ alerts = [] }) => {
   return (
     <div
       style={{
-        flex: 1,
+        width: "100%",
+        minWidth: "0",
         padding: "20px",
         background: "rgba(255,255,255,0.05)",
         borderRadius: "12px",
-        color: "white"
+        color: "white",
+        boxSizing: "border-box",
+        maxHeight: "400px",
+        overflowY: "auto"
       }}
     >
-      <h5>🚨 Live Emergency Alerts</h5>
+      <h5 style={{ marginBottom: "10px" }}>
+        🚨 Live Emergency Alerts
+      </h5>
 
       {alerts.length === 0 ? (
         <p>No alerts available</p>
@@ -23,7 +29,8 @@ const AlertsFeed = ({ alerts = [] }) => {
             style={{
               marginTop: "12px",
               padding: "10px",
-              borderBottom: "1px solid rgba(255,255,255,0.1)"
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              wordBreak: "break-word"
             }}
           >
             <strong>{alert.type}</strong> — {alert.location}

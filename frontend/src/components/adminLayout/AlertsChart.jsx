@@ -54,16 +54,28 @@ const AlertsChart = () => {
   return (
     <div
       style={{
-        flex:1,
-        padding:"20px",
-        background:"rgba(255,255,255,0.05)",
-        borderRadius:"12px"
+        width: "100%",
+        minWidth: "0",
+        padding: "20px",
+        background: "rgba(255,255,255,0.05)",
+        borderRadius: "12px",
+        boxSizing: "border-box"
       }}
     >
 
-      <h5>Weekly Emergency Alerts</h5>
+      <h5 style={{ marginBottom: "15px" }}>
+        Weekly Emergency Alerts
+      </h5>
 
-      <Bar data={data} />
+      <div style={{ width: "100%", height: "300px" }}>
+        <Bar
+          data={data}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false
+          }}
+        />
+      </div>
 
     </div>
   );

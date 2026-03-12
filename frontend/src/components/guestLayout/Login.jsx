@@ -25,33 +25,48 @@ const Login = () => {
     setFormData({...formData,[e.target.name]:e.target.value});
   };
 
-  const handleSubmit = async(e)=>{
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try{
+  try {
 
-      const res = await axios.post(
-        "http://localhost:8000/api/users/login",
-        formData
-      );
+    const res = await axios.post(
+      "http://localhost:8000/api/users/login",
+      formData
+    );
 
-      localStorage.setItem("token",res.data.token);
+    localStorage.setItem("token", res.data.token);
 
-      setMessage("Login successful! Redirecting...");
-      setType("success");
+    const role = res.data.user.role; // get role from backend
 
-      setTimeout(()=>{
+    localStorage.setItem("role", role);
+
+    setMessage("Login successful! Redirecting...");
+    setType("success");
+
+    setTimeout(() => {
+
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      }
+
+      else if (role === "authority") {
+        navigate("/authority/dashboard");
+      }
+
+      else {
         navigate("/user/dashboard");
-      },1500);
+      }
 
-    }catch(err){
+    }, 1500);
 
-      setMessage(err.response?.data?.message || "Invalid email or password");
-      setType("error");
+  } catch (err) {
 
-    }
-  };
+    setMessage(err.response?.data?.message || "Invalid email or password");
+    setType("error");
 
+  }
+};
   return(
     <>
       <style>{`

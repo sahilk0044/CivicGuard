@@ -7,17 +7,19 @@ const IncidentMap = ({ alerts = [] }) => {
   return (
     <div
       style={{
-        flex: 1,
+        width: "100%",
+        minWidth: "0",
         height: "350px",
         borderRadius: "12px",
-        overflow: "hidden"
+        overflow: "hidden",
+        boxSizing: "border-box"
       }}
     >
 
       <MapContainer
         center={[20.5937, 78.9629]}
         zoom={5}
-        style={{ height: "100%" }}
+        style={{ height: "100%", width: "100%" }}
       >
 
         <TileLayer

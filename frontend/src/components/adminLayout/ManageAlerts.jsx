@@ -19,13 +19,9 @@ const ManageAlerts = () => {
 
     fetchAlerts();
 
-    /* REAL TIME NEW ALERT */
-
     socket.on("newAlert", (alert) => {
       setAlerts(prev => [alert, ...prev]);
     });
-
-    /* REAL TIME STATUS UPDATE */
 
     socket.on("alertUpdated", (updatedAlert) => {
       setAlerts(prev =>
@@ -33,46 +29,68 @@ const ManageAlerts = () => {
       );
     });
 
-    /* REAL TIME AUTHORITY ASSIGNMENT */
-
     socket.on("alertAssigned", (data) => {
-
       setAlerts(prev =>
         prev.map(a =>
           a._id === data.alert._id ? data.alert : a
         )
       );
-
     });
 
   }, []);
 
-
-
   const fetchAlerts = async () => {
 
-    const res = await axios.get(
-      "http://localhost:8000/api/alerts/all-alerts"
-    );
+    try {
 
-    setAlerts(res.data);
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(
+        "http://localhost:8000/api/alerts/all-alerts",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setAlerts(res.data);
+
+    } catch (error) {
+
+      console.error("Error fetching alerts:", error);
+
+    }
 
   };
-
 
 
   const deleteAlert = async () => {
 
-    await axios.delete(
-      `http://localhost:8000/api/alerts/delete/${selectedAlert._id}`
-    );
+    try {
 
-    setAlerts(alerts.filter(a => a._id !== selectedAlert._id));
+      const token = localStorage.getItem("token");
 
-    setSelectedAlert(null);
+      await axios.delete(
+        `http://localhost:8000/api/alerts/delete/${selectedAlert._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setAlerts(alerts.filter(a => a._id !== selectedAlert._id));
+
+      setSelectedAlert(null);
+
+    } catch (error) {
+
+      console.error("Error deleting alert:", error);
+
+    }
 
   };
-
 
 
   const getStatusColor = (status) => {
@@ -86,26 +104,24 @@ const ManageAlerts = () => {
   };
 
 
-
   return (
 
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ color: "white" }}
+      style={{ color: "white", width: "100%", boxSizing: "border-box" }}
     >
 
       <h2 style={{ marginBottom: "20px" }}>
         🚨 Alerts Control Room
       </h2>
 
-
-
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))",
-          gap: "20px"
+          gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
+          gap: "20px",
+          width: "100%"
         }}
       >
 
@@ -120,33 +136,26 @@ const ManageAlerts = () => {
               borderRadius: "14px",
               background: "rgba(255,255,255,0.05)",
               backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.1)"
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxSizing: "border-box",
+              wordBreak: "break-word"
             }}
           >
 
             <h4>🚨 {alert.type?.toUpperCase()} ALERT</h4>
 
-            {/* USER */}
-
             <p>
               User: {alert.user?.name || "Unknown"}
             </p>
-
-            {/* LOCATION */}
 
             <p>
               <FaMapMarkerAlt /> {alert.locationName || "Location unavailable"}
             </p>
 
-            {/* AUTHORITY */}
-
             <p>
-              <FaUserShield /> Authority:
-              {" "}
+              <FaUserShield /> Authority:{" "}
               {alert.authority?.name || "Not Assigned"}
             </p>
-
-            {/* STATUS */}
 
             <p>
               Status:
@@ -159,23 +168,21 @@ const ManageAlerts = () => {
               </strong>
             </p>
 
-
-            {/* VIDEO EVIDENCE */}
-
             {alert.video && (
 
               <video
-                width="100%"
                 controls
-                style={{ marginTop: "10px", borderRadius: "8px" }}
+                style={{
+                  width: "100%",
+                  maxWidth: "100%",
+                  marginTop: "10px",
+                  borderRadius: "8px"
+                }}
               >
                 <source src={`http://localhost:8000/${alert.video}`} />
               </video>
 
             )}
-
-
-            {/* DELETE BUTTON */}
 
             <div
               style={{
@@ -209,8 +216,6 @@ const ManageAlerts = () => {
 
 
 
-      {/* DELETE MODAL */}
-
       {selectedAlert && (
 
         <div
@@ -223,7 +228,8 @@ const ManageAlerts = () => {
             background: "rgba(0,0,0,0.6)",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            padding: "20px"
           }}
         >
 
@@ -234,8 +240,10 @@ const ManageAlerts = () => {
               background: "#0f172a",
               padding: "30px",
               borderRadius: "12px",
-              width: "350px",
-              textAlign: "center"
+              width: "100%",
+              maxWidth: "350px",
+              textAlign: "center",
+              boxSizing: "border-box"
             }}
           >
 
@@ -251,13 +259,12 @@ const ManageAlerts = () => {
                 marginTop: "20px",
                 display: "flex",
                 justifyContent: "center",
-                gap: "10px"
+                gap: "10px",
+                flexWrap: "wrap"
               }}
             >
 
-              <button
-                onClick={() => setSelectedAlert(null)}
-              >
+              <button onClick={() => setSelectedAlert(null)}>
                 Cancel
               </button>
 

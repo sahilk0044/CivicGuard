@@ -29,40 +29,55 @@ const Reports = () => {
 
   }, []);
 
-
   const fetchReports = async () => {
 
-    const res = await axios.get(
-      "http://localhost:8000/api/alerts/reports"
-    );
+    try {
 
-    setData(res.data);
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(
+        "http://localhost:8000/api/alerts/all-reports",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setData(res.data);
+
+    } catch (error) {
+
+      console.error("Error fetching reports:", error);
+
+    }
 
   };
 
-
   if (!data) return <p style={{ color: "white" }}>Loading reports...</p>;
-
 
   return (
 
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ color: "white" }}
+      style={{
+        color: "white",
+        width: "100%",
+        boxSizing: "border-box"
+      }}
     >
 
       <h2 style={{ marginBottom: "20px" }}>
         📊 System Reports
       </h2>
 
-
-
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(350px,1fr))",
-          gap: "20px"
+          gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+          gap: "20px",
+          width: "100%"
         }}
       >
 
@@ -74,40 +89,36 @@ const Reports = () => {
             padding: "20px",
             borderRadius: "14px",
             background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(12px)"
+            backdropFilter: "blur(12px)",
+            boxSizing: "border-box"
           }}
         >
 
           <h4>Alerts by Type</h4>
 
-          <ResponsiveContainer width="100%" height={250}>
+          <div style={{ width: "100%", height: "250px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.alertsByType || []}
+                  dataKey="count"
+                  nameKey="_id"
+                  outerRadius={80}
+                >
+                  {(data.alertsByType || []).map((entry, index) => (
+                    <Cell
+                      key={index}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
 
-            <PieChart>
-
-              <Pie
-                data={data.alertsByType}
-                dataKey="count"
-                nameKey="_id"
-                outerRadius={80}
-              >
-
-                {data.alertsByType.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-
-              </Pie>
-
-              <Tooltip />
-
-            </PieChart>
-
-          </ResponsiveContainer>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
         </motion.div>
-
 
 
         {/* ALERTS PER DAY */}
@@ -118,28 +129,25 @@ const Reports = () => {
             padding: "20px",
             borderRadius: "14px",
             background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(12px)"
+            backdropFilter: "blur(12px)",
+            boxSizing: "border-box"
           }}
         >
 
           <h4>Alerts Per Day</h4>
 
-          <ResponsiveContainer width="100%" height={250}>
-
-            <BarChart data={data.alertsPerDay}>
-
-              <XAxis dataKey="_id" />
-              <YAxis />
-              <Tooltip />
-
-              <Bar dataKey="count" fill="#ef4444" />
-
-            </BarChart>
-
-          </ResponsiveContainer>
+          <div style={{ width: "100%", height: "250px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.alertsPerDay || []}>
+                <XAxis dataKey="_id" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#ef4444" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
         </motion.div>
-
 
 
         {/* STATUS REPORT */}
@@ -150,40 +158,38 @@ const Reports = () => {
             padding: "20px",
             borderRadius: "14px",
             background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(12px)"
+            backdropFilter: "blur(12px)",
+            boxSizing: "border-box"
           }}
         >
 
           <h4>Alert Status</h4>
 
-          <ResponsiveContainer width="100%" height={250}>
+          <div style={{ width: "100%", height: "250px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
 
-            <PieChart>
+                <Pie
+                  data={data.statusReport || []}
+                  dataKey="count"
+                  nameKey="_id"
+                  outerRadius={80}
+                >
+                  {(data.statusReport || []).map((entry, index) => (
+                    <Cell
+                      key={index}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
 
-              <Pie
-                data={data.statusReport}
-                dataKey="count"
-                nameKey="_id"
-                outerRadius={80}
-              >
+                <Tooltip />
 
-                {data.statusReport.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-
-              </Pie>
-
-              <Tooltip />
-
-            </PieChart>
-
-          </ResponsiveContainer>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
         </motion.div>
-
 
 
         {/* TOP USERS */}
@@ -194,13 +200,15 @@ const Reports = () => {
             padding: "20px",
             borderRadius: "14px",
             background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(12px)"
+            backdropFilter: "blur(12px)",
+            boxSizing: "border-box",
+            wordBreak: "break-word"
           }}
         >
 
           <h4>Top Users Sending Alerts</h4>
 
-          {data.topUsers.map((user, index) => (
+          {(data.topUsers || []).map((user, index) => (
 
             <p key={index}>
               User ID: {user._id} — {user.alerts} alerts
@@ -213,6 +221,7 @@ const Reports = () => {
       </div>
 
     </motion.div>
+
   );
 
 };

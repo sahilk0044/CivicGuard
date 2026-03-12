@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { FaBell, FaUserCircle } from "react-icons/fa";
+import { FaBell, FaUserCircle, FaBars } from "react-icons/fa";
 
-const AdminNavbar = () => {
+const AdminNavbar = ({ setSidebarOpen }) => {
 
   return (
     <motion.div
@@ -21,7 +21,21 @@ const AdminNavbar = () => {
       }}
     >
 
-      <h5 style={{ margin: 0 }}>Admin Dashboard</h5>
+      {/* Left Side */}
+      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+
+        {/* Hamburger Menu */}
+        <FaBars
+          onClick={() => setSidebarOpen(true)}
+          style={{
+            cursor: "pointer",
+            fontSize: "18px"
+          }}
+        />
+
+        <h5 style={{ margin: 0 }}>Admin Dashboard</h5>
+
+      </div>
 
       {/* Right Side */}
       <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
