@@ -15,7 +15,6 @@ const AuthorityRouter = express.Router();
 
 /* ================= AUTHORITY AUTH ================= */
 
-AuthorityRouter.post("/register", registerAuthority);  //post /api/authority/register
 
 AuthorityRouter.post("/login", loginAuthority);  //post /api/authority/login
 

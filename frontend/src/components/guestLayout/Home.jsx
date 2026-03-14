@@ -70,6 +70,20 @@ const Home = () => {
         margin-bottom:10px;
       }
 
+      .login-card{
+        border:none;
+        border-radius:15px;
+        padding:30px;
+        text-align:center;
+        transition:0.3s;
+        background:white;
+      }
+
+      .login-card:hover{
+        transform:translateY(-8px);
+        box-shadow:0 10px 25px rgba(0,0,0,0.15);
+      }
+
       `}</style>
 
       {/* HERO */}
@@ -97,6 +111,94 @@ const Home = () => {
           </Button>
 
         </Container>
+      </section>
+
+      {/* LOGIN OPTIONS */}
+
+      <section className="section" style={{background:"#f9fafb"}}>
+
+        <Container>
+
+          <Row className="text-center mb-5">
+            <h2 data-aos="fade-up">Access the System</h2>
+            <p data-aos="fade-up">Login according to your role</p>
+          </Row>
+
+          <Row>
+
+            <Col md={4} data-aos="zoom-in">
+
+              <Card className="login-card">
+
+                <h4>👤 User</h4>
+
+                <p>
+                  Citizens can register and send emergency alerts using the
+                  CivicGuard system.
+                </p>
+
+                <Button
+                  as={NavLink}
+                  to="/login"
+                  variant="primary"
+                >
+                  User Login
+                </Button>
+
+              </Card>
+
+            </Col>
+
+            <Col md={4} data-aos="zoom-in" data-aos-delay="200">
+
+              <Card className="login-card">
+
+                <h4>🛡 Authority</h4>
+
+                <p>
+                  Authorities receive emergency alerts and respond quickly to
+                  help citizens in danger.
+                </p>
+
+                <Button
+                  as={NavLink}
+                  to="/authority/login"
+                  variant="warning"
+                >
+                  Authority Login
+                </Button>
+
+              </Card>
+
+            </Col>
+
+            <Col md={4} data-aos="zoom-in" data-aos-delay="400">
+
+              <Card className="login-card">
+
+                <h4>⚙ Admin</h4>
+
+                <p>
+                  Administrators manage the CivicGuard system including users
+                  and authorities.
+                </p>
+
+                <Button
+                  as={NavLink}
+                  to="/admin/login"
+                  variant="dark"
+                >
+                  Admin Login
+                </Button>
+
+              </Card>
+
+            </Col>
+
+          </Row>
+
+        </Container>
+
       </section>
 
       {/* WHY CIVICGUARD */}

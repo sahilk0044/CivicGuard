@@ -74,46 +74,47 @@ export const loginAuthority = async (req, res) => {
 };
 
 /* ================= VIEW ALERTS ================= */
-
 export const getAuthorityAlerts = async (req, res) => {
   try {
 
-    const alerts = await Alert.find()
-      .populate("user", "name email mobile")
+    const alerts = await Alert.find({
+      authority: req.user.id   // only alerts assigned to this authority
+    })
+      .populate("user", "name email phone")
       .sort({ createdAt: -1 });
 
     res.json(alerts);
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
 /* ================= RESOLVE ALERT ================= */
 
 export const resolveAlert = async (req, res) => {
-  try {
 
-    const { id } = req.params;
+  const alert = await Alert.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      authority: req.user.id
+    },
+    { status: "resolved" },
+    { new: true }
+  );
 
-    const alert = await Alert.findByIdAndUpdate(
-      id,
-      { status: "resolved" },
-      { new: true }
-    );
-
-    res.json({
-      message: "Alert resolved",
-      alert,
+  if (!alert) {
+    return res.status(404).json({
+      message: "Alert not found or not assigned to you"
     });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
+
+  res.json({
+    message: "Alert resolved",
+    alert
+  });
+
 };
-
-
-
 /* ================= GET ALL AUTHORITIES ================= */
 
 export const getAllAuthorities = async (req, res) => {

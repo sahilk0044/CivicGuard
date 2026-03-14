@@ -22,6 +22,11 @@ import Reports from "./components/adminLayout/Reports";
 import axios from "axios";
 import { useEffect } from "react";
 import Settings from "./components/adminLayout/Settings";
+import AuthorityLayout from "./components/authorityLayout/AuthorityLayout";
+import AuthorityDashboard from "./components/authorityLayout/AuthorityDashboard";
+import AuthorityAlerts from "./components/authorityLayout/AuthorityAlerts";
+import AuthorityProfile from "./components/authorityLayout/AuthorityProfile";
+import AuthorityLogin from "./components/authorityLayout/AuthorityLogin";
 
 
 function App() {
@@ -69,6 +74,7 @@ function App() {
       <Route path="contact" element={<Contact/>}/>
       <Route path="register" element={<Register/>}/>
       <Route path="login" element={<Login/>}/>
+      <Route path="/authority/login" element={<AuthorityLogin />} />
     </Route>
 
     <Route path="/user" element={<UserLayout/>}>
@@ -90,6 +96,14 @@ function App() {
     <Route path="/admin/reports" element={<Reports />} />
     <Route path="/admin/settings" element={<Settings />} />
     
+    </Route>
+
+    <Route path="/authority" element={<AuthorityLayout/>}>
+      <Route index element={<AuthorityDashboard/>}/>
+      <Route path="/authority/dashboard" element={<AuthorityDashboard/>}/>
+      <Route path="/authority/alerts" element={<AuthorityAlerts/>}/>
+      <Route path="/authority/profile" element={<AuthorityProfile/>}/>
+      
     </Route>
 
 
