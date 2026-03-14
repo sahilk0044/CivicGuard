@@ -3,12 +3,13 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { FaTrash, FaUserShield, FaPhone } from "react-icons/fa";
+import { FaTrash, FaUserShield, FaPhone, FaEnvelope } from "react-icons/fa";
 
 const ManageAuthorities = () => {
 
   const [authorities, setAuthorities] = useState([]);
   const [selectedAuthority, setSelectedAuthority] = useState(null);
+  const [successMsg, setSuccessMsg] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -21,46 +22,60 @@ const ManageAuthorities = () => {
   });
 
   useEffect(() => {
-
     AOS.init({ duration: 800 });
-
     fetchAuthorities();
-
   }, []);
 
   const fetchAuthorities = async () => {
-
-    const res = await axios.get(
-      "http://localhost:8000/api/authority/authorities"
-    );
-
-    setAuthorities(res.data);
-
+    try {
+      const res = await axios.get(
+        "http://localhost:8000/api/authority/authorities"
+      );
+      setAuthorities(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleChange = (e) => {
-
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-
   };
 
-  const addAuthority = async () => {
+  const addAuthority = async (e) => {
+
+    e.preventDefault();
+
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.password
+    ) {
+      alert("Please fill all required fields");
+      return;
+    }
 
     try {
 
       await axios.post(
         "http://localhost:8000/api/admin/add-authority",
         {
-          ...formData,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          department: formData.department,
+          password: formData.password,
           location: {
             latitude: formData.latitude,
             longitude: formData.longitude
           }
         }
       );
+
+      setSuccessMsg("Authority added successfully");
 
       setFormData({
         name: "",
@@ -74,10 +89,12 @@ const ManageAuthorities = () => {
 
       fetchAuthorities();
 
+      setTimeout(() => {
+        setSuccessMsg("");
+      }, 3000);
+
     } catch (error) {
-
       console.log(error);
-
     }
 
   };
@@ -97,9 +114,7 @@ const ManageAuthorities = () => {
       setSelectedAuthority(null);
 
     } catch (error) {
-
       console.log(error);
-
     }
 
   };
@@ -112,17 +127,21 @@ const ManageAuthorities = () => {
       style={{ color: "white", width: "100%" }}
     >
 
-      <h2 style={{ marginBottom: "25px" }}>
+      <h2 style={{ marginBottom: "25px", fontWeight: "600" }}>
         🛡 Authority Management
       </h2>
 
+      {successMsg && (
+        <div className="alert alert-success">
+          {successMsg}
+        </div>
+      )}
+
       {/* ADD AUTHORITY FORM */}
 
-      <motion.div
+      <motion.form
+        onSubmit={addAuthority}
         data-aos="fade-up"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
         style={{
           padding: "30px",
           borderRadius: "16px",
@@ -141,33 +160,42 @@ const ManageAuthorities = () => {
         <div className="row g-3">
 
           <div className="col-md-6">
-            <input
-              className="form-control"
-              placeholder="Authority Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
+            <div className="input-group">
+              <span className="input-group-text"><FaUserShield /></span>
+              <input
+                className="form-control"
+                placeholder="Authority Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           <div className="col-md-6">
-            <input
-              className="form-control"
-              placeholder="Email Address"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+            <div className="input-group">
+              <span className="input-group-text"><FaEnvelope /></span>
+              <input
+                className="form-control"
+                placeholder="Email Address"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           <div className="col-md-6">
-            <input
-              className="form-control"
-              placeholder="Phone Number"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+            <div className="input-group">
+              <span className="input-group-text"><FaPhone /></span>
+              <input
+                className="form-control"
+                placeholder="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           <div className="col-md-6">
@@ -216,14 +244,11 @@ const ManageAuthorities = () => {
 
         </div>
 
-        <motion.div
-          style={{ marginTop: "25px", textAlign: "right" }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-
-          <button
-            onClick={addAuthority}
+        <div style={{ marginTop: "25px", textAlign: "right" }}>
+          <motion.button
+            type="submit"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="btn btn-success px-4 py-2"
             style={{
               borderRadius: "10px",
@@ -231,18 +256,15 @@ const ManageAuthorities = () => {
             }}
           >
             ➕ Add Authority
-          </button>
+          </motion.button>
+        </div>
 
-        </motion.div>
-
-      </motion.div>
+      </motion.form>
 
 
       {/* AUTHORITY GRID */}
 
-      <div
-        className="row g-4"
-      >
+      <div className="row g-4">
 
         {authorities.map(authority => (
 

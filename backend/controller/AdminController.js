@@ -1,5 +1,7 @@
 import User from "../models/User.js";
 import Alert from "../models/Alert.js";
+import Authority from "../models/Authority.js";
+import bcrypt from "bcryptjs";
 
 /* ================= GET ALL USERS ================= */
 
