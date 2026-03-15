@@ -27,11 +27,9 @@ const AuthoritySidebar = ({ sidebarOpen, setSidebarOpen }) => {
         <FaExclamationTriangle /> Alerts
       </NavLink>
 
-      <NavLink to="/authority/profile" onClick={closeSidebar}>
-        <FaUserShield /> Profile
-      </NavLink>
+      
 
-      <NavLink to="/login" className="logout" onClick={closeSidebar}>
+      <NavLink to="/authority/login" onClick={closeSidebar}>
         <FaSignOutAlt /> Logout
       </NavLink>
 

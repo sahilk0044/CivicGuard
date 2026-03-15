@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Nav, Navbar } from "react-bootstrap";
+import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
 
 export const GuestNavbar = () => {
@@ -93,6 +93,7 @@ export const GuestNavbar = () => {
           background: #ffd700;
           transition: 0.3s ease;
         }
+        
 
         .nav-link-custom:hover::after {
           width: 100%;
@@ -204,17 +205,24 @@ export const GuestNavbar = () => {
               >
                 Register
               </Nav.Link>
-
-              <Nav.Link
-                as={NavLink}
-                to="/login"
-                onClick={handleNavClick}
-                className="nav-link-custom"
-              >
-                Login
-              </Nav.Link>
-
+            
+           
             </Nav>
+              <NavDropdown title="Login"  className="nav-link-custom">
+
+          <NavDropdown.Item as={NavLink} to="/login">
+            👤 Login as User
+          </NavDropdown.Item>
+
+          <NavDropdown.Item as={NavLink} to="/authority/login">
+            🛡 Login as Authority
+          </NavDropdown.Item>
+
+          <NavDropdown.Item as={NavLink} to="/admin/login">
+            ⚙ Login as Admin
+          </NavDropdown.Item>
+
+        </NavDropdown>
 
           </Navbar.Collapse>
 

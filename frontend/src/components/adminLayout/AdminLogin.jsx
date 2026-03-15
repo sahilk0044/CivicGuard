@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUserShield, FaEnvelope, FaLock } from "react-icons/fa";
 
-const AuthorityLogin = () => {
+const AdminLogin = () => {
 
   const navigate = useNavigate();
 
@@ -31,13 +31,13 @@ const AuthorityLogin = () => {
     try {
 
       const res = await axios.post(
-        "http://localhost:8000/api/authority/login",
+        "http://localhost:8000/api/admin/login",
         formData
       );
 
       localStorage.setItem("token", res.data.token);
 
-      navigate("/authority/dashboard");
+      navigate("/admin/dashboard");
 
     } catch (err) {
 
@@ -61,9 +61,9 @@ const AuthorityLogin = () => {
 
           <FaUserShield size={50} />
 
-          <h3>Authority Login</h3>
+          <h3>Admin Login</h3>
 
-          <p>Login to CivicGuard Authority Panel</p>
+          <p>Login to CivicGuard Admin Panel</p>
 
         </div>
 
@@ -201,4 +201,4 @@ const AuthorityLogin = () => {
 
 };
 
-export default AuthorityLogin;
+export default AdminLogin;

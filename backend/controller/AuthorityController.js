@@ -3,39 +3,6 @@ import Alert from "../models/Alert.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-/* ================= REGISTER AUTHORITY ================= */
-
-export const registerAuthority = async (req, res) => {
-  try {
-    const { name, email, phone, department, password } = req.body;
-
-    const existing = await Authority.findOne({ email });
-
-    if (existing) {
-      return res.status(400).json({ message: "Authority already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const authority = new Authority({
-      name,
-      email,
-      phone,
-      department,
-      password: hashedPassword,
-    });
-
-    await authority.save();
-
-    res.json({
-      message: "Authority registered successfully",
-      authority,
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 /* ================= LOGIN AUTHORITY ================= */
 
@@ -152,6 +119,68 @@ export const deleteAuthority = async (req, res) => {
   } catch (error) {
 
     res.status(500).json({ message: error.message });
+
+  }
+
+};
+/* ================= GET AUTHORITY PROFILE ================= */
+
+export const getAuthorityProfile = async (req, res) => {
+
+  try {
+
+    const authority = await Authority.findById(req.user.id)
+      .select("-password");
+
+    if (!authority) {
+      return res.status(404).json({
+        message: "Authority not found"
+      });
+    }
+
+    res.json(authority);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
+/* ================= UPDATE AUTHORITY PROFILE ================= */
+
+export const updateAuthorityProfile = async (req, res) => {
+
+  try {
+
+    const { phone } = req.body;
+
+    const authority = await Authority.findById(req.user.id);
+
+    if (!authority) {
+      return res.status(404).json({
+        message: "Authority not found"
+      });
+    }
+
+    authority.phone = phone || authority.phone;
+
+    const updatedAuthority = await authority.save();
+
+    res.json({
+      message: "Profile updated successfully",
+      authority: updatedAuthority
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
 
   }
 
