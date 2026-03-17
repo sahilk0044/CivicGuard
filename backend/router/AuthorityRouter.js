@@ -10,7 +10,7 @@ import {
   updateAuthorityProfile,
 } from "../controller/AuthorityController.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import authorityMiddleware from "../middleware/authorityMiddleware.js";
 
 const AuthorityRouter = express.Router();
 
@@ -21,24 +21,24 @@ AuthorityRouter.post("/login", loginAuthority);  //post /api/authority/login
 
 /* ================= VIEW ALERTS ================= */
 
-AuthorityRouter.get("/alerts", authMiddleware, getAuthorityAlerts);  //get /api/authority/alerts
+AuthorityRouter.get("/alerts", authorityMiddleware, getAuthorityAlerts);  //get /api/authority/alerts
 
 /* ================= RESOLVE ALERT ================= */
 
-AuthorityRouter.put("/resolve/:id", authMiddleware, resolveAlert);  //put /api/authority/resolve/:id
+AuthorityRouter.put("/resolve/:id", authorityMiddleware, resolveAlert);  //put /api/authority/resolve/:id
 AuthorityRouter.get("/authorities",getAllAuthorities);
 AuthorityRouter.delete("/authorities/:id",deleteAuthority);
 /* ================= AUTHORITY PROFILE ================= */
 
 AuthorityRouter.get(
   "/profile",
-  authMiddleware,
+  authorityMiddleware,
   getAuthorityProfile
 );
 
 AuthorityRouter.put(
   "/profile",
-  authMiddleware,
+  authorityMiddleware,
   updateAuthorityProfile
 );
 

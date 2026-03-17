@@ -11,7 +11,13 @@ export const loginAuthority = async (req, res) => {
 
     const { email, password } = req.body;
 
-    const authority = await Authority.findOne({ email });
+    console.log("Login Email:", email);
+
+    const authority = await Authority.findOne({
+      email: email.toLowerCase()
+    });
+
+    //console.log("Authority found:", authority);
 
     if (!authority) {
       return res.status(404).json({ message: "Authority not found" });
@@ -32,7 +38,7 @@ export const loginAuthority = async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      authority,
+      authority
     });
 
   } catch (error) {
@@ -41,22 +47,34 @@ export const loginAuthority = async (req, res) => {
 };
 
 /* ================= VIEW ALERTS ================= */
+import mongoose from "mongoose";
+
 export const getAuthorityAlerts = async (req, res) => {
   try {
 
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized"
+      });
+    }
+
+    console.log("Authority ID:", req.user.id);
+
     const alerts = await Alert.find({
-      authority: req.user.id   // only alerts assigned to this authority
+      authority: new mongoose.Types.ObjectId(req.user.id)
     })
       .populate("user", "name email phone")
       .sort({ createdAt: -1 });
 
+    console.log("Alerts Found:", alerts.length);
+
     res.json(alerts);
 
   } catch (error) {
+    console.log("Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
-
 /* ================= RESOLVE ALERT ================= */
 
 export const resolveAlert = async (req, res) => {

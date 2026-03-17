@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { io } from "socket.io-client";
 import {
   FaBell,
   FaCheckCircle,
@@ -11,9 +12,39 @@ import {
 const AuthorityDashboard = () => {
 
   const [alerts, setAlerts] = useState([]);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     fetchAlerts();
+
+    // 🔥 SOCKET CONNECTION
+    const socket = io("http://localhost:8000");
+
+    // 🔥 WHEN NEW ALERT COMES
+    socket.on("newAlert", (newAlert) => {
+
+      // Only add if assigned to this authority
+      if (newAlert.authority === JSON.parse(localStorage.getItem("authority"))?._id) {
+        setAlerts(prev => [newAlert, ...prev]);
+      }
+
+    });
+
+    // 🔥 WHEN ALERT UPDATED (resolved etc.)
+    socket.on("alertUpdated", (updatedAlert) => {
+
+      setAlerts(prev =>
+        prev.map(alert =>
+          alert._id === updatedAlert._id
+            ? updatedAlert
+            : alert
+        )
+      );
+
+    });
+
+    return () => socket.disconnect();
+
   }, []);
 
   const fetchAlerts = async () => {
@@ -21,21 +52,26 @@ const AuthorityDashboard = () => {
     try {
 
       const res = await axios.get(
-        "http://localhost:8000/api//authority/alerts"
+        "http://localhost:8000/api/authority/alerts",
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // ✅ FIXED
+          }
+        }
       );
 
       setAlerts(res.data);
 
     } catch (error) {
 
-      console.log(error);
+      console.log("Fetch error:", error.response?.data || error);
 
     }
 
   };
 
   const totalAlerts = alerts.length;
-  const pendingAlerts = alerts.filter(a => a.status === "pending").length;
+  const pendingAlerts = alerts.filter(a => a.status !== "resolved").length;
   const resolvedAlerts = alerts.filter(a => a.status === "resolved").length;
 
   return (
@@ -46,54 +82,37 @@ const AuthorityDashboard = () => {
         🚨 Authority Dashboard
       </h2>
 
-
-      {/* STATISTICS CARDS */}
+      {/* STATISTICS */}
 
       <div className="row g-4">
 
         <div className="col-lg-4 col-md-6">
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="dashboard-card"
-          >
+          <motion.div whileHover={{ scale: 1.05 }} className="dashboard-card">
             <FaBell size={32} />
             <h4>{totalAlerts}</h4>
             <p>Total Alerts</p>
           </motion.div>
-
         </div>
 
         <div className="col-lg-4 col-md-6">
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="dashboard-card"
-          >
+          <motion.div whileHover={{ scale: 1.05 }} className="dashboard-card">
             <FaClock size={32} />
             <h4>{pendingAlerts}</h4>
             <p>Pending Alerts</p>
           </motion.div>
-
         </div>
 
         <div className="col-lg-4 col-md-6">
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="dashboard-card"
-          >
+          <motion.div whileHover={{ scale: 1.05 }} className="dashboard-card">
             <FaCheckCircle size={32} />
             <h4>{resolvedAlerts}</h4>
             <p>Resolved Alerts</p>
           </motion.div>
-
         </div>
 
       </div>
 
-
-      {/* RECENT ALERTS TABLE */}
+      {/* TABLE */}
 
       <div
         style={{
@@ -114,13 +133,11 @@ const AuthorityDashboard = () => {
           <table className="table table-dark table-hover">
 
             <thead>
-
               <tr>
                 <th>User</th>
                 <th>Location</th>
                 <th>Status</th>
               </tr>
-
             </thead>
 
             <tbody>
@@ -133,26 +150,15 @@ const AuthorityDashboard = () => {
 
                   <td>
                     <FaMapMarkerAlt />{" "}
-                    {alert.location?.latitude},
-                    {alert.location?.longitude}
+                    {alert.locationName || `${alert.latitude}, ${alert.longitude}`}
                   </td>
 
                   <td>
-
                     {alert.status === "resolved" ? (
-
-                      <span className="badge bg-success">
-                        Resolved
-                      </span>
-
+                      <span className="badge bg-success">Resolved</span>
                     ) : (
-
-                      <span className="badge bg-warning">
-                        Pending
-                      </span>
-
+                      <span className="badge bg-warning text-dark">Pending</span>
                     )}
-
                   </td>
 
                 </tr>
@@ -167,9 +173,6 @@ const AuthorityDashboard = () => {
 
       </div>
 
-
-      {/* STYLES */}
-
       <style>{`
 
         .dashboard-card{
@@ -179,16 +182,6 @@ const AuthorityDashboard = () => {
           backdrop-filter: blur(12px);
           text-align: center;
           border:1px solid rgba(255,255,255,0.08);
-          transition:0.3s;
-        }
-
-        .dashboard-card h4{
-          margin-top:10px;
-          font-size:28px;
-        }
-
-        .dashboard-card p{
-          opacity:0.7;
         }
 
       `}</style>

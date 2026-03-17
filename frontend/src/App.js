@@ -28,6 +28,7 @@ import AuthorityAlerts from "./components/authorityLayout/AuthorityAlerts";
 import AuthorityProfile from "./components/authorityLayout/AuthorityProfile";
 import AuthorityLogin from "./components/authorityLayout/AuthorityLogin";
 import AdminLogin from "./components/adminLayout/AdminLogin";
+import AuthorityMap from "./components/authorityLayout/AuthorityMap";
 
 
 function App() {
@@ -105,6 +106,7 @@ function App() {
       <Route index element={<AuthorityDashboard/>}/>
       <Route path="/authority/dashboard" element={<AuthorityDashboard/>}/>
       <Route path="/authority/alerts" element={<AuthorityAlerts/>}/>
+      <Route path="/authority/map" element={<AuthorityMap/>}/>
       
       
     </Route>
