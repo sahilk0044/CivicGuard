@@ -73,7 +73,7 @@ const Dashboard = () => {
 
   };
 
-  const activeAlerts = alerts.filter(a => a.status === "active");
+  const activeAlerts = alerts.filter(a => a.status === "assigned");
 
   if (loading) {
 

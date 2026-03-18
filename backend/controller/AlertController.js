@@ -137,11 +137,12 @@ export const getUserAlerts = async (req, res) => {
 
     const alerts = await Alert.find({
       user: req.user._id
-    }).sort({ createdAt: -1 });
-
+    })
+  .populate("authority", "name department phone") // ✅ ADD THIS
+      .sort({ createdAt: -1 });
     res.json(alerts);
 
-    console.log("User requesting alerts:", req.user._id);
+   
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -214,7 +215,7 @@ export const getDashboardStats = async (req, res) => {
 
     const usersCount = await User.countDocuments();
     const authoritiesCount = await Authority.countDocuments();
-    const alertsCount = await Alert.countDocuments({ status: "active" });
+    const alertsCount = await Alert.countDocuments({ status: "assigned" });
     const resolvedCases = await Alert.countDocuments({ status: "resolved" });
 
     const latestAlerts = await Alert.find()

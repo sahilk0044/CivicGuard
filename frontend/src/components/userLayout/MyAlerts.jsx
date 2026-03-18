@@ -47,7 +47,7 @@ const MyAlerts = () => {
     if (status === "in-progress")
       return <Badge bg="warning">In Progress</Badge>;
 
-    return <Badge bg="danger">Pending</Badge>;
+    return <Badge bg="danger">Active</Badge>;
 
   };
 
@@ -105,7 +105,16 @@ const MyAlerts = () => {
                     <strong>Status:</strong>{" "}
                     {getStatusBadge(alert.status)}
                   </p>
-
+                  <p>
+                    <strong>Assigned Authority:</strong>{" "}
+                    {alert.authority ? (
+                      <>
+                        {alert.authority.name} ({alert.authority.department})
+                      </>
+                    ) : (
+                      "Not Assigned Yet"
+                    )}
+                  </p>
                   <p>
                     <strong>Date:</strong>{" "}
                     {new Date(alert.createdAt).toLocaleString()}

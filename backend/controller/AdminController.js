@@ -102,12 +102,12 @@ export const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalAlerts = await Alert.countDocuments();
-    const activeAlerts = await Alert.countDocuments({ status: "active" });
+    const assignedAlerts = await Alert.countDocuments({ status:"assigned" });
 
     res.json({
       totalUsers,
       totalAlerts,
-      activeAlerts,
+      assignedAlerts,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

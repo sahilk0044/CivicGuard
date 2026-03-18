@@ -58,7 +58,7 @@ export const getAuthorityAlerts = async (req, res) => {
       });
     }
 
-    console.log("Authority ID:", req.user.id);
+   
 
     const alerts = await Alert.find({
       authority: new mongoose.Types.ObjectId(req.user.id)
@@ -66,7 +66,7 @@ export const getAuthorityAlerts = async (req, res) => {
       .populate("user", "name email phone")
       .sort({ createdAt: -1 });
 
-    console.log("Alerts Found:", alerts.length);
+   
 
     res.json(alerts);
 

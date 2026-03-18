@@ -6,9 +6,10 @@ import AlertsChart from "./AlertsChart";
 import AlertsFeed from "./AlertsFeed";
 import IncidentMap from "./IncidentMap";
 import VideoEvidence from "./VideoEvidence";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
-
+  const navigate=useNavigate();
   const [stats, setStats] = useState({});
   const [alerts, setAlerts] = useState([]);
 
@@ -49,35 +50,43 @@ const AdminDashboard = () => {
       >
 
         <div style={{ flex: "1 1 220px" }}>
+            <div onClick={() => navigate("/admin/users")} style={{ cursor: "pointer" }}>
           <StatCard
             title="Users"
             value={stats.usersCount || 0}
             icon="👥"
           />
+          </div>
         </div>
 
         <div style={{ flex: "1 1 220px" }}>
+          <div onClick={() => navigate("/admin/authorities")} style={{ cursor: "pointer" }}>
           <StatCard
             title="Authorities"
             value={stats.authoritiesCount || 0}
             icon="🛡"
           />
+          </div>
         </div>
 
         <div style={{ flex: "1 1 220px" }}>
+           <div onClick={() => navigate("/admin/alerts")} style={{ cursor: "pointer" }}>
           <StatCard
             title="Active Alerts"
             value={stats.alertsCount || 0}
             icon="🚨"
           />
+          </div>
         </div>
 
         <div style={{ flex: "1 1 220px" }}>
+          <div onClick={() => navigate("/admin/alerts")} style={{ cursor: "pointer" }}>
           <StatCard
             title="Resolved Cases"
             value={stats.resolvedCases || 0}
             icon="✔"
           />
+          </div>
         </div>
 
       </div>
@@ -98,7 +107,9 @@ const AdminDashboard = () => {
         </div>
 
         <div style={{ flex: "1 1 350px", minWidth: "280px" }}>
+            <div onClick={() => navigate("/admin/alerts")} style={{ cursor: "pointer" }}>
           <AlertsFeed alerts={alerts} />
+          </div>
         </div>
 
       </div>
@@ -118,7 +129,7 @@ const AdminDashboard = () => {
         </div>
 
         <div style={{ flex: "1 1 350px", minWidth: "280px" }}>
-          <VideoEvidence alerts={alerts} />
+          {/* <VideoEvidence alerts={alerts} /> */}
         </div>
 
       </div>
