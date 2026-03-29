@@ -134,6 +134,9 @@ const Login = () => {
         text-decoration:none;
         font-weight:500;
       }
+        .forgot{
+          text-decoration:none;
+        }
 
       `}</style>
 
@@ -194,15 +197,23 @@ const Login = () => {
                     />
 
                   </Form.Group>
+                  
+               
 
                   <Button type="submit" className="auth-btn">
                     Login
                   </Button>
 
                 </Form>
+                
 
                 <div className="auth-link">
+                   <NavLink to="/forgotpassword">Forgot Password</NavLink><br/>
                   Don't have an account? <NavLink to="/register">Register</NavLink>
+                  
+                
+                
+                
                 </div>
 
               </div>

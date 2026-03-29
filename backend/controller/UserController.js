@@ -3,6 +3,41 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
+
+// -------------------- EMAIL HELPER FUNCTION --------------------
+const sendEmail = async ({ to, subject, html }) => {
+  if (!to) throw new Error('No recipient specified for email');
+
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+    tls:{
+      rejectUnauthorized:false,
+    }
+  });
+
+  const mailOptions = { 
+    from: process.env.EMAIL, 
+    to, 
+    subject, 
+    html 
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        return reject(error);
+      }
+      console.log('Email sent:', info && info.response ? info.response : info);
+      resolve(info);
+    });
+  });
+};
+
 /* ================= REGISTER USER ================= */
 export const registerUser = async (req, res) => {
   try {
@@ -80,6 +115,48 @@ export const loginUser = async (req, res) => {
       message: "Server error"
     });
 
+  }
+};
+
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Generate random 6-digit temporary password
+    const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log("Generated temp password:", tempPassword);
+
+    // Assign temporary password (will be hashed by pre-save hook)
+    user.password = tempPassword;
+    await user.save();
+
+    // Send temporary password via email
+    const html = `<p>Hello ${user.name},</p>
+                  <p>A password reset was requested for your account. Use the temporary password below to log in and then change your password immediately.</p>
+                  <p><strong>Temporary password:</strong> ${tempPassword}</p>
+                  <p>This temporary password is valid for a limited time. If you did not request this, please contact support immediately.</p>
+                  <p>Best regards,<br>Your Company Name</p>`;
+
+    try {
+      await sendEmail({ 
+        to: user.email, 
+        subject: 'Password Reset - Temporary Password', 
+        html 
+      });
+    } catch (emailErr) {
+      console.error('forgotPassword email error:', emailErr);
+      return res.status(500).json({ message: 'Temporary password created but failed to send email' });
+    }
+
+    return res.status(200).json({ message: 'Temporary password sent to your email ✅' });
+  } catch (error) {
+    console.error('forgotPassword error:', error);
+    return res.status(500).json({ message: 'Failed to reset password ❌', error: error.message });
   }
 };
 
@@ -164,6 +241,56 @@ export const addEmergencyContact = async (req, res) => {
       user.emergencyContacts[user.emergencyContacts.length - 1];
 
     res.status(201).json(addedContact);
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: error.message
+    });
+
+  }
+};
+
+export const updateEmergencyContact = async (req, res) => {
+  try {
+
+    const { contactId } = req.params;
+    const { name1, email, phone, relationship } = req.body;
+
+    if (!contactId) {
+      return res.status(400).json({
+        message: "Contact ID is required"
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    const contact = user.emergencyContacts.id(contactId);
+
+    if (!contact) {
+      return res.status(404).json({
+        message: "Emergency contact not found"
+      });
+    }
+
+    // ✅ Update only provided fields
+    if (name1 !== undefined) contact.name1 = name1;
+    if (email !== undefined) contact.email = email;
+    if (phone !== undefined) contact.phone = phone;
+    if (relationship !== undefined) contact.relationship = relationship;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Emergency contact updated successfully",
+      contact
+    });
 
   } catch (error) {
 

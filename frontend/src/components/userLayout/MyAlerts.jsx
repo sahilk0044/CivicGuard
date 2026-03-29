@@ -75,9 +75,9 @@ const MyAlerts = () => {
 
           {alerts.map((alert) => (
 
-            <Col md={4} key={alert._id} className="mb-4">
+            <Col md={3} key={alert._id} className="mb-3">
 
-              <Card className="shadow-sm h-100">
+              <Card className="shadow-sm h-50">
 
                 {alert.video && (
 

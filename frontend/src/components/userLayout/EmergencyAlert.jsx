@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Container, Alert, Form } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card } from "react-bootstrap";
 import { motion } from "framer-motion";
 import axios from "axios";
 
@@ -9,45 +9,41 @@ const EmergencyAlert = () => {
   const [countdown, setCountdown] = useState(null);
   const [recording, setRecording] = useState(false);
   const [alertSent, setAlertSent] = useState(false);
-  const [alertType, setAlertType] = useState("police");
+  const [alertType, setAlertType] = useState("");
 
   const videoRef = useRef(null);
   const chunksRef = useRef([]);
   const locationRef = useRef({ latitude: null, longitude: null });
   const emergencyLockRef = useRef(false);
 
-  const startEmergency = () => {
+  // 🔥 START EMERGENCY WITH TYPE
+  const startEmergency = (type) => {
 
-  if (emergencyLockRef.current) return;
+    if (emergencyLockRef.current) return;
 
-  emergencyLockRef.current = true;
+    setAlertType(type);
+    emergencyLockRef.current = true;
 
-  setCountdown(3);
+    setCountdown(3);
 
-  let count = 3;
+    let count = 3;
 
-  const timer = setInterval(() => {
+    const timer = setInterval(() => {
 
-    count -= 1;
+      count -= 1;
 
-    if (count <= 0) {
+      if (count <= 0) {
+        clearInterval(timer);
+        setCountdown(null);
+        activateEmergency(type);
+      } else {
+        setCountdown(count);
+      }
 
-      clearInterval(timer);
-      setCountdown(null);
-      activateEmergency();
+    }, 1000);
+  };
 
-    } else {
-
-      setCountdown(count);
-
-    }
-
-  }, 1000);
-
-};
-
-
-  const activateEmergency = async () => {
+  const activateEmergency = async (type) => {
 
     let stream;
 
@@ -57,7 +53,6 @@ const EmergencyAlert = () => {
       setRecording(true);
 
       /* CAMERA */
-
       stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
@@ -70,7 +65,6 @@ const EmergencyAlert = () => {
       setStatus("Getting location...");
 
       /* LOCATION */
-
       await new Promise((resolve) => {
 
         navigator.geolocation.getCurrentPosition(
@@ -80,14 +74,10 @@ const EmergencyAlert = () => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
 
-            console.log("Latitude:", lat);
-            console.log("Longitude:", lon);
-
             locationRef.current.latitude = lat;
             locationRef.current.longitude = lon;
 
             try {
-
               const response = await axios.get(
                 `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
               );
@@ -96,9 +86,7 @@ const EmergencyAlert = () => {
                 response.data.display_name || "Unknown Location";
 
             } catch {
-
               locationRef.current.locationName = "Unknown Location";
-
             }
 
             resolve();
@@ -106,10 +94,8 @@ const EmergencyAlert = () => {
           },
 
           () => {
-
             setStatus("Location unavailable. Sending alert without location.");
             resolve();
-
           },
 
           {
@@ -122,29 +108,23 @@ const EmergencyAlert = () => {
 
       });
 
-
       /* MEDIA RECORDER */
-
       let recorder;
 
       if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
         recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
-      }
-      else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8")) {
+      } else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8")) {
         recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8" });
-      }
-      else {
+      } else {
         recorder = new MediaRecorder(stream);
       }
 
       chunksRef.current = [];
 
       recorder.ondataavailable = (event) => {
-
         if (event.data && event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
-
       };
 
       recorder.onstop = async () => {
@@ -164,7 +144,7 @@ const EmergencyAlert = () => {
           const formData = new FormData();
 
           formData.append("video", file);
-          formData.append("type", alertType);
+          formData.append("type", type);
           formData.append("latitude", locationRef.current.latitude);
           formData.append("longitude", locationRef.current.longitude);
           formData.append("locationName", locationRef.current.locationName);
@@ -194,10 +174,8 @@ const EmergencyAlert = () => {
           }
 
         } catch (error) {
-
           console.error(error);
           setStatus("Error sending alert");
-
         }
 
       };
@@ -207,13 +185,11 @@ const EmergencyAlert = () => {
       setStatus("Recording emergency video...");
 
       setTimeout(() => {
-
         if (recorder && recorder.state === "recording") {
           setStatus("Uploading emergency alert...");
           recorder.stop();
         }
-
-      }, 15000);
+      }, 5000);
 
     } catch (error) {
 
@@ -227,11 +203,9 @@ const EmergencyAlert = () => {
 
       setRecording(false);
       emergencyLockRef.current = false;
-
     }
 
   };
-
 
   return (
 
@@ -241,31 +215,50 @@ const EmergencyAlert = () => {
         🚨 Emergency Alert
       </motion.h1>
 
-      <p>If you are in danger press the alert button.</p>
+      <p>Select department to send alert</p>
 
       {status && <Alert variant="warning">{status}</Alert>}
 
+      {/* 🔥 CARDS SECTION */}
       {!recording && !alertSent && (
+        <Row className="mt-4">
 
-        <Form.Group className="mb-3">
+          {[
+            { type: "police", label: "🚓 Police", color: "#007bff" },
+            { type: "medical", label: "🏥 Medical", color: "#28a745" },
+            { type: "fire", label: "🔥 Fire", color: "#dc3545" }
+          ].map((dept, index) => (
 
-          <Form.Label>Select Emergency Type</Form.Label>
+            <Col md={4} key={index} className="mb-3">
 
-          <Form.Select
-            value={alertType}
-            onChange={(e) => setAlertType(e.target.value)}
-          >
-            <option value="police">Police / Crime</option>
-            <option value="medical">Medical Emergency</option>
-            <option value="fire">Fire Emergency</option>
-          </Form.Select>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 
-        </Form.Group>
+                <Card
+                  onClick={() => startEmergency(dept.type)}
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: "15px",
+                    border: "none",
+                    boxShadow: "0 5px 20px rgba(0,0,0,0.2)"
+                  }}
+                >
+                  <Card.Body style={{ padding: "40px" }}>
+                    <h2 style={{ color: dept.color }}>{dept.label}</h2>
+                    <p>Tap to send alert</p>
+                  </Card.Body>
+                </Card>
 
+              </motion.div>
+
+            </Col>
+
+          ))}
+
+        </Row>
       )}
 
+      {/* COUNTDOWN */}
       {countdown && (
-
         <motion.h1
           style={{ fontSize: "80px", color: "red" }}
           initial={{ scale: 0 }}
@@ -273,13 +266,11 @@ const EmergencyAlert = () => {
         >
           {countdown}
         </motion.h1>
-
       )}
 
+      {/* VIDEO */}
       {!alertSent && (
-
         <div style={{ marginBottom: "20px" }}>
-
           <video
             ref={videoRef}
             autoPlay
@@ -291,71 +282,28 @@ const EmergencyAlert = () => {
               border: "3px solid red"
             }}
           />
-
           {recording && (
             <p style={{ color: "red", marginTop: "10px" }}>
               🔴 Recording Emergency Video...
             </p>
           )}
-
         </div>
-
       )}
 
+      {/* SUCCESS */}
       {alertSent && (
-
         <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }}>
-
           <h1 style={{ color: "green", fontSize: "48px" }}>
             🚓 HELP IS ON THE WAY
           </h1>
-
           <p style={{ fontSize: "22px" }}>
-            Your alert has been sent to the nearest authority.
+            Your alert has been sent successfully.
           </p>
-
         </motion.div>
-
-      )}
-
-      {!recording && !alertSent && (
-
-        <motion.div
-          style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
-        >
-
-          <motion.button
-            onClick={startEmergency}
-            whileHover={{
-              scale: 1.08,
-              boxShadow: "0 0 35px rgba(255,0,0,0.9)"
-            }}
-            whileTap={{ scale: 0.92 }}
-            style={{
-              width: "160px",
-              height: "160px",
-              borderRadius: "50%",
-              background: "radial-gradient(circle, #ff4d4d, #b30000)",
-              border: "6px solid white",
-              color: "white",
-              fontSize: "34px",
-              fontWeight: "bold",
-              letterSpacing: "3px",
-              cursor: "pointer",
-              boxShadow: "0 0 25px rgba(255,0,0,0.7)"
-            }}
-          >
-            SOS
-          </motion.button>
-
-        </motion.div>
-
       )}
 
     </Container>
-
   );
-
 };
 
 export default EmergencyAlert;

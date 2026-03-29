@@ -8,7 +8,9 @@ import {
   sendContactMessage,
   getContacts,
   updateProfile,
-  sendSupportMessage
+  sendSupportMessage,
+  updateEmergencyContact,
+  forgotPassword
 } from "../controller/UserController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -22,6 +24,7 @@ UserRouter.post("/register", registerUser);
 
 // Login User
 UserRouter.post("/login", loginUser);
+UserRouter.post("/forgotpassword", forgotPassword);
 
 UserRouter.post("/contact",sendContactMessage);
 UserRouter.post("/support",sendSupportMessage);
@@ -40,6 +43,7 @@ UserRouter.put("/update-profile", authMiddleware, updateProfile);
 UserRouter.post("/add-contact", authMiddleware, addEmergencyContact);
 
 UserRouter.get("/contacts", authMiddleware, getContacts);
+UserRouter.put("/update-contact/:contactId", authMiddleware, updateEmergencyContact);
 // Delete emergency contact
 UserRouter.delete("/delete-contact/:contactId", authMiddleware, deleteEmergencyContact);
 UserRouter.get("/verify-token", authMiddleware, (req, res) => {

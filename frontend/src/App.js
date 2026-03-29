@@ -25,10 +25,10 @@ import Settings from "./components/adminLayout/Settings";
 import AuthorityLayout from "./components/authorityLayout/AuthorityLayout";
 import AuthorityDashboard from "./components/authorityLayout/AuthorityDashboard";
 import AuthorityAlerts from "./components/authorityLayout/AuthorityAlerts";
-import AuthorityProfile from "./components/authorityLayout/AuthorityProfile";
 import AuthorityLogin from "./components/authorityLayout/AuthorityLogin";
 import AdminLogin from "./components/adminLayout/AdminLogin";
 import AuthorityMap from "./components/authorityLayout/AuthorityMap";
+import ForgotPassword from "./components/guestLayout/ForgotPassword";
 
 
 function App() {
@@ -76,6 +76,7 @@ function App() {
       <Route path="contact" element={<Contact/>}/>
       <Route path="register" element={<Register/>}/>
       <Route path="login" element={<Login/>}/>
+      <Route path="forgotpassword" element={<ForgotPassword/>}/>
       <Route path="/authority/login" element={<AuthorityLogin />} />
       <Route path="/admin/login" element={<AdminLogin />} />
     </Route>
