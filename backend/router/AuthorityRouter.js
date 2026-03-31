@@ -11,13 +11,14 @@ import {
 } from "../controller/AuthorityController.js";
 
 import authorityMiddleware from "../middleware/authorityMiddleware.js";
+import upload from "../middleware/upload.js";
 
 const AuthorityRouter = express.Router();
 
 /* ================= AUTHORITY AUTH ================= */
 
 
-AuthorityRouter.post("/login", loginAuthority);  //post /api/authority/login
+AuthorityRouter.post("/authority-login", loginAuthority);  //post /api/authority/login
 
 /* ================= VIEW ALERTS ================= */
 
@@ -38,6 +39,7 @@ AuthorityRouter.get(
 
 AuthorityRouter.put(
   "/profile",
+    upload.single("profileImage"),
   authorityMiddleware,
   updateAuthorityProfile
 );

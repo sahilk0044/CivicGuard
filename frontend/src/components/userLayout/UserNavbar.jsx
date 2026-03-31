@@ -81,6 +81,13 @@ const UserNavbar = () => {
             >
               Support
             </Nav.Link>
+            <Nav.Link
+              as={NavLink}
+              to="/user/changepassword"
+              onClick={handleNavClick}
+            >
+              change password
+            </Nav.Link>
 
             <Nav.Link
               as={NavLink}

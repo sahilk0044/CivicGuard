@@ -27,6 +27,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
+    localStorage.clear();
 
   try {
 
@@ -211,9 +212,6 @@ const Login = () => {
                    <NavLink to="/forgotpassword">Forgot Password</NavLink><br/>
                   Don't have an account? <NavLink to="/register">Register</NavLink>
                   
-                
-                
-                
                 </div>
 
               </div>

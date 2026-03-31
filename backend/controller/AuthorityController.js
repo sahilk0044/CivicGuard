@@ -6,73 +6,100 @@ import jwt from "jsonwebtoken";
 
 /* ================= LOGIN AUTHORITY ================= */
 
+
 export const loginAuthority = async (req, res) => {
   try {
 
     const { email, password } = req.body;
 
-    console.log("Login Email:", email);
-
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required"
+      });
+    }
+// console.log("Incoming Email:", email);
+    // 🔥 FIX: normalize email properly
     const authority = await Authority.findOne({
-      email: email.toLowerCase()
+      email: email.trim().toLowerCase()
     });
-
-    //console.log("Authority found:", authority);
+// console.log("Authority Found:", authority?._id, authority?.email);
 
     if (!authority) {
-      return res.status(404).json({ message: "Authority not found" });
+      return res.status(404).json({
+        message: "Authority not found"
+      });
     }
 
+    // 🔐 Compare password
     const isMatch = await bcrypt.compare(password, authority.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password" });
+      return res.status(400).json({
+        message: "Invalid password"
+      });
     }
+    
 
+    // 🔐 Generate token (CORRECT USER)
     const token = jwt.sign(
-      { id: authority._id, role: "authority" },
+      {
+        id: authority._id,role:authority.role,
+        role: "authority"
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    res.json({
+    // 🔥 VERY IMPORTANT: remove password before sending
+    const { password: _, ...authorityData } = authority._doc;
+
+    res.status(200).json({
       message: "Login successful",
       token,
-      authority
+      user: authorityData   // ✅ consistent with frontend
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    console.error("Login Error:", error);
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
 };
-
 /* ================= VIEW ALERTS ================= */
-import mongoose from "mongoose";
+
+
 
 export const getAuthorityAlerts = async (req, res) => {
   try {
 
-    if (!req.user || !req.user.id) {
+    // ✅ Check user
+    if (!req.user || !req.user._id) {
       return res.status(401).json({
         message: "Unauthorized"
       });
     }
 
-   
-
+    // ✅ Fetch alerts assigned to this authority
     const alerts = await Alert.find({
-      authority: new mongoose.Types.ObjectId(req.user.id)
+      authority: req.user._id
     })
-      .populate("user", "name email phone")
+      .populate("user", "name email mobile")
+      .populate("authority", "name email")
       .sort({ createdAt: -1 });
 
-   
-
-    res.json(alerts);
+    res.status(200).json(alerts);
 
   } catch (error) {
-    console.log("Error:", error);
-    res.status(500).json({ message: error.message });
+    console.log("Error fetching authority alerts:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch alerts ❌",
+      error: error.message
+    });
   }
 };
 /* ================= RESOLVE ALERT ================= */
@@ -172,12 +199,12 @@ export const getAuthorityProfile = async (req, res) => {
 /* ================= UPDATE AUTHORITY PROFILE ================= */
 
 export const updateAuthorityProfile = async (req, res) => {
-
   try {
 
     const { phone } = req.body;
 
-    const authority = await Authority.findById(req.user.id);
+    // ✅ Use _id (better than id)
+    const authority = await Authority.findById(req.user._id);
 
     if (!authority) {
       return res.status(404).json({
@@ -185,21 +212,28 @@ export const updateAuthorityProfile = async (req, res) => {
       });
     }
 
+    // ✅ Update phone
     authority.phone = phone || authority.phone;
+
+    // ✅ IMPORTANT: SAVE IMAGE
+    if (req.file) {
+      authority.profileImage = req.file.path;
+    }
 
     const updatedAuthority = await authority.save();
 
-    res.json({
-      message: "Profile updated successfully",
+    res.status(200).json({
+      message: "Profile updated successfully ✅",
       authority: updatedAuthority
     });
 
   } catch (error) {
+
+    console.log("Update error:", error);
 
     res.status(500).json({
       message: error.message
     });
 
   }
-
 };

@@ -12,9 +12,11 @@ const Profile = () => {
   const [formData,setFormData] = useState({
     name:"",
     email:"",
-    mobile:""
+    mobile:"",
+    profileImage:null
   });
 
+  const [preview,setPreview] = useState(null);
   const [loading,setLoading] = useState(true);
   const [editMode,setEditMode] = useState(false);
   const [message,setMessage] = useState(null);
@@ -27,6 +29,8 @@ const Profile = () => {
 
   },[]);
 
+  /* ================= FETCH PROFILE ================= */
+
   const fetchProfile = async ()=>{
 
     try{
@@ -34,7 +38,7 @@ const Profile = () => {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:8000/api/users/profile",
+        "http://localhost:8000/api/users/profile", // ✅ FIXED
         {
           headers:{Authorization:`Bearer ${token}`}
         }
@@ -45,9 +49,11 @@ const Profile = () => {
       setFormData({
         name:res.data.name,
         email:res.data.email,
-        mobile:res.data.mobile
+        mobile:res.data.mobile,
+        profileImage:null
       });
 
+      setPreview(null);
       setMessage(null);
       setError(null);
       setLoading(false);
@@ -61,6 +67,8 @@ const Profile = () => {
 
   };
 
+  /* ================= HANDLE INPUT ================= */
+
   const handleChange = (e)=>{
 
     setFormData({
@@ -70,6 +78,23 @@ const Profile = () => {
 
   };
 
+  /* ================= IMAGE PREVIEW ================= */
+
+  const handleImageChange = (e)=>{
+    const file = e.target.files[0];
+
+    if(file){
+      setFormData({
+        ...formData,
+        profileImage:file
+      });
+
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  /* ================= UPDATE PROFILE ================= */
+
   const updateProfile = async (e)=>{
 
     e.preventDefault();
@@ -78,20 +103,32 @@ const Profile = () => {
 
       const token = localStorage.getItem("token");
 
+      const form = new FormData();
+
+      form.append("name", formData.name);
+      form.append("email", formData.email);
+      form.append("mobile", formData.mobile);
+
+      if(formData.profileImage){
+        form.append("profileImage", formData.profileImage);
+      }
+
       const res = await axios.put(
-        "http://localhost:8000/api/users/update-profile",
-        formData,
+        "http://localhost:8000/api/users/update-profile", // ✅ FIXED
+        form,
         {
-          headers:{Authorization:`Bearer ${token}`}
+          headers:{
+            Authorization:`Bearer ${token}`,
+            "Content-Type":"multipart/form-data"
+          }
         }
       );
 
       setMessage(res.data.message || "Profile updated successfully");
       setError(null);
-
       setEditMode(false);
 
-      localStorage.setItem("name",formData.name);
+      fetchProfile();
 
     }catch(err){
 
@@ -102,14 +139,14 @@ const Profile = () => {
 
   };
 
-  if(loading){
+  /* ================= LOADING ================= */
 
+  if(loading){
     return(
       <Container className="text-center mt-5">
         <Spinner animation="border"/>
       </Container>
     )
-
   }
 
   return(
@@ -150,6 +187,13 @@ align-items:center;
 justify-content:center;
 margin:auto;
 margin-bottom:20px;
+overflow:hidden;
+}
+
+.profile-avatar img{
+width:100%;
+height:100%;
+object-fit:cover;
 }
 
 .profile-title{
@@ -161,12 +205,8 @@ margin-bottom:25px;
 .profile-input{
 background:transparent;
 border:none;
-
 border-radius:5;
-
 }
-
-
 
 .profile-input:focus{
 background:transparent;
@@ -220,8 +260,27 @@ transition={{duration:0.5}}
 
 <Card.Body>
 
+{/* PROFILE IMAGE */}
+
 <div className="profile-avatar">
-{user.name?.charAt(0).toUpperCase()}
+
+{preview ? (
+
+<img src={preview} alt="preview"/>
+
+) : user.profileImage ? (
+
+<img
+src={`http://localhost:8000/${user.profileImage}`}
+alt="profile"
+/>
+
+) : (
+
+user.name?.charAt(0).toUpperCase()
+
+)}
+
 </div>
 
 <h4 className="profile-title">User Profile</h4>
@@ -231,8 +290,8 @@ transition={{duration:0.5}}
 
 <Form onSubmit={updateProfile}>
 
+{/* NAME */}
 <Form.Group className="mb-3">
-
 <Form.Label className="profile-label">
 <FaUser className="me-2"/>Name
 </Form.Label>
@@ -245,11 +304,10 @@ value={formData.name}
 onChange={handleChange}
 disabled={!editMode}
 />
-
 </Form.Group>
 
+{/* EMAIL */}
 <Form.Group className="mb-3">
-
 <Form.Label className="profile-label">
 <FaEnvelope className="me-2"/>Email
 </Form.Label>
@@ -257,16 +315,13 @@ disabled={!editMode}
 <Form.Control
 className="profile-input"
 type="email"
-name="email"
 value={formData.email}
-onChange={handleChange}
-disabled={!editMode}
+disabled
 />
-
 </Form.Group>
 
+{/* MOBILE */}
 <Form.Group className="mb-3">
-
 <Form.Label className="profile-label">
 <FaPhone className="me-2"/>Mobile
 </Form.Label>
@@ -279,7 +334,19 @@ value={formData.mobile}
 onChange={handleChange}
 disabled={!editMode}
 />
+</Form.Group>
 
+{/* IMAGE */}
+<Form.Group className="mb-3">
+<Form.Label className="profile-label">
+Profile Image
+</Form.Label>
+
+<Form.Control
+type="file"
+onChange={handleImageChange}
+disabled={!editMode}
+/>
 </Form.Group>
 
 {!editMode ? (
@@ -288,9 +355,7 @@ disabled={!editMode}
 className="profile-btn"
 onClick={()=>setEditMode(true)}
 >
-
 Update Profile
-
 </Button>
 
 ) : (
@@ -306,9 +371,7 @@ variant="light"
 className="profile-btn-secondary"
 onClick={()=>setEditMode(false)}
 >
-
 Cancel
-
 </Button>
 
 </>

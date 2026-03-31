@@ -25,7 +25,10 @@ const adminSchema = new mongoose.Schema(
       type: String,
       default: "admin",
     },
-
+     profileImage: {
+      type: String,
+      default: ""
+    }
    
     
   },

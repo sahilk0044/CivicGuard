@@ -16,6 +16,7 @@ const AuthorityProfile = () => {
   const [profile, setProfile] = useState({});
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
+  const [image, setImage] = useState(null); // ✅ NEW
 
   const token = localStorage.getItem("token");
 
@@ -24,14 +25,12 @@ const AuthorityProfile = () => {
   }, []);
 
   const fetchProfile = async () => {
-
     try {
-
       const res = await axios.get(
         "http://localhost:8000/api/authority/profile",
         {
-          headers:{
-            Authorization:`Bearer ${token}`
+          headers: {
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -40,52 +39,65 @@ const AuthorityProfile = () => {
       setFormData(res.data);
 
     } catch (error) {
-
       console.log("Profile fetch error:", error);
-
     }
-
   };
 
   const handleChange = (e) => {
-
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
 
+  // ✅ HANDLE IMAGE SELECT
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
   };
 
   const saveProfile = async () => {
+  try {
 
-    try {
+    const data = new FormData();
+    data.append("phone", formData.phone);
 
-      const res = await axios.put(
-        "http://localhost:8000/api/authority/profile",
-        formData,
-        {
-          headers:{
-            Authorization:`Bearer ${token}`
-          }
-        }
-      );
-
-      setProfile(res.data.authority || res.data);
-      setEditing(false);
-
-    } catch (error) {
-
-      console.log("Update error:", error);
-
+    if (image) {
+      data.append("profileImage", image);
     }
 
-  };
+    const res = await axios.put(
+      "http://localhost:8000/api/authority/profile",
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
 
-  const cancelEdit = () => {
+    // ✅ IMPORTANT
+    const updated = res.data.authority;
 
-    setFormData(profile);
+    setProfile(updated);     // update UI with backend data
+    setFormData(updated);    // keep form in sync
+
     setEditing(false);
 
+    // ✅ reset image AFTER update
+    setTimeout(() => {
+      setImage(null);
+    }, 200);
+
+  } catch (error) {
+    console.log("Update error:", error);
+  }
+};
+
+  const cancelEdit = () => {
+    setFormData(profile);
+    setEditing(false);
+    setImage(null);
   };
 
   return (
@@ -94,13 +106,28 @@ const AuthorityProfile = () => {
 
       <motion.div
         className="profile-card"
-        initial={{opacity:0,y:30}}
-        animate={{opacity:1,y:0}}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
       >
 
         <div className="profile-header">
 
-          <FaUserShield size={60} />
+          {/* ✅ PROFILE IMAGE */}
+          {image ? (
+            <img
+              src={URL.createObjectURL(image)}
+              alt="preview"
+              className="profile-img"
+            />
+          ) : profile.profileImage ? (
+            <img
+              src={`http://localhost:8000/${profile.profileImage}`}
+              alt="profile"
+              className="profile-img"
+            />
+          ) : (
+            <FaUserShield size={60} />
+          )}
 
           <h3>{profile.name}</h3>
 
@@ -110,24 +137,24 @@ const AuthorityProfile = () => {
 
         </div>
 
+        {/* ✅ IMAGE INPUT (ONLY IN EDIT MODE) */}
+        {editing && (
+          <input
+            type="file"
+            onChange={handleImageChange}
+            style={{ marginBottom: "15px" }}
+          />
+        )}
+
         <div className="profile-body">
 
           <div className="profile-field">
-
             <FaEnvelope />
-
-            <input
-              type="text"
-              value={formData.email || ""}
-              disabled
-            />
-
+            <input type="text" value={formData.email || ""} disabled />
           </div>
 
           <div className="profile-field">
-
             <FaPhone />
-
             <input
               type="text"
               name="phone"
@@ -135,19 +162,15 @@ const AuthorityProfile = () => {
               disabled={!editing}
               onChange={handleChange}
             />
-
           </div>
 
           <div className="profile-field">
-
             <FaBuilding />
-
             <input
               type="text"
               value={formData.department || ""}
               disabled
             />
-
           </div>
 
         </div>
@@ -155,16 +178,13 @@ const AuthorityProfile = () => {
         <div className="profile-actions">
 
           {!editing ? (
-
             <button
               className="btn btn-primary"
               onClick={() => setEditing(true)}
             >
               <FaEdit /> Edit
             </button>
-
           ) : (
-
             <>
               <button
                 className="btn btn-success"
@@ -180,13 +200,11 @@ const AuthorityProfile = () => {
                 <FaTimes /> Cancel
               </button>
             </>
-
           )}
 
         </div>
 
       </motion.div>
-
 
       <style>{`
 
@@ -212,8 +230,12 @@ const AuthorityProfile = () => {
         margin-bottom:25px;
       }
 
-      .profile-header h3{
-        margin-top:10px;
+      .profile-img{
+        width:100px;
+        height:100px;
+        border-radius:50%;
+        object-fit:cover;
+        border:3px solid #22c55e;
       }
 
       .profile-body{
@@ -247,11 +269,9 @@ const AuthorityProfile = () => {
       }
 
       @media(max-width:600px){
-
         .profile-actions{
           flex-direction:column;
         }
-
       }
 
       `}</style>

@@ -4,7 +4,9 @@ import {
   FaHome,
   FaExclamationTriangle,
   FaUserShield,
-  FaSignOutAlt
+
+  FaSignOutAlt,
+  FaUser
 } from "react-icons/fa";
 
 const AuthoritySidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -21,6 +23,10 @@ const AuthoritySidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <NavLink to="/authority/dashboard" onClick={closeSidebar}>
         <FaHome /> Dashboard
+      </NavLink>
+      
+      <NavLink to="/authority/profile" onClick={closeSidebar}>
+        <FaUser/> Profile
       </NavLink>
 
       <NavLink to="/authority/alerts" onClick={closeSidebar}>

@@ -2,14 +2,13 @@ import jwt from "jsonwebtoken";
 import Authority from "../models/Authority.js";
 
 const authorityMiddleware = async (req, res, next) => {
-
   try {
 
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        message: "No token provided"
+        message: "No valid token provided"
       });
     }
 
@@ -17,14 +16,14 @@ const authorityMiddleware = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Ensure this is authority token
+    // ✅ Role check
     if (decoded.role !== "authority") {
       return res.status(403).json({
         message: "Access denied: Not an authority"
       });
     }
 
-    const authority = await Authority.findById(decoded.id);
+    const authority = await Authority.findById(decoded.id).select("-password");
 
     if (!authority) {
       return res.status(404).json({
@@ -32,7 +31,8 @@ const authorityMiddleware = async (req, res, next) => {
       });
     }
 
-    req.user = authority; // ✅ attach authority
+    req.user = authority;
+
     next();
 
   } catch (error) {
@@ -40,11 +40,10 @@ const authorityMiddleware = async (req, res, next) => {
     console.log("Authority Auth Error:", error);
 
     return res.status(401).json({
-      message: "Invalid token"
+      message: "Invalid or expired token"
     });
 
   }
-
 };
 
 export default authorityMiddleware;

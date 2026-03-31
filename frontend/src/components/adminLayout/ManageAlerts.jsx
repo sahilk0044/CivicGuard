@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import io from "socket.io-client";
-import AOS from "aos";
-import "aos/dist/aos.css";
 import { FaTrash, FaMapMarkerAlt, FaUserShield } from "react-icons/fa";
 
 const socket = io("http://localhost:8000");
@@ -14,8 +12,6 @@ const ManageAlerts = () => {
   const [selectedAlert, setSelectedAlert] = useState(null);
 
   useEffect(() => {
-
-    AOS.init({ duration: 800 });
 
     fetchAlerts();
 
@@ -37,12 +33,17 @@ const ManageAlerts = () => {
       );
     });
 
+    // ✅ CLEANUP (VERY IMPORTANT)
+    return () => {
+      socket.off("newAlert");
+      socket.off("alertUpdated");
+      socket.off("alertAssigned");
+    };
+
   }, []);
 
   const fetchAlerts = async () => {
-
     try {
-
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
@@ -57,18 +58,12 @@ const ManageAlerts = () => {
       setAlerts(res.data);
 
     } catch (error) {
-
       console.error("Error fetching alerts:", error);
-
     }
-
   };
 
-
   const deleteAlert = async () => {
-
     try {
-
       const token = localStorage.getItem("token");
 
       await axios.delete(
@@ -81,32 +76,24 @@ const ManageAlerts = () => {
       );
 
       setAlerts(alerts.filter(a => a._id !== selectedAlert._id));
-
       setSelectedAlert(null);
 
     } catch (error) {
-
       console.error("Error deleting alert:", error);
-
     }
-
   };
 
-
   const getStatusColor = (status) => {
-
     if (status === "active") return "#ef4444";
     if (status === "assigned") return "#f59e0b";
     if (status === "resolved") return "#22c55e";
-
     return "white";
-
   };
-
 
   return (
 
     <motion.div
+      layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       style={{ color: "white", width: "100%", boxSizing: "border-box" }}
@@ -128,9 +115,9 @@ const ManageAlerts = () => {
         {alerts.map(alert => (
 
           <motion.div
+            layout
             key={alert._id}
             whileHover={{ scale: 1.04 }}
-            data-aos="fade-up"
             style={{
               padding: "20px",
               borderRadius: "14px",
@@ -144,9 +131,7 @@ const ManageAlerts = () => {
 
             <h4>🚨 {alert.type?.toUpperCase()} ALERT</h4>
 
-            <p>
-              User: {alert.user?.name || "Unknown"}
-            </p>
+            <p>User: {alert.user?.name || "Unknown"}</p>
 
             <p>
               <FaMapMarkerAlt /> {alert.locationName || "Location unavailable"}
@@ -159,39 +144,25 @@ const ManageAlerts = () => {
 
             <p>
               Status:
-              <strong
-                style={{
-                  color: getStatusColor(alert.status)
-                }}
-              >
+              <strong style={{ color: getStatusColor(alert.status) }}>
                 {" "} {alert.status?.toUpperCase()}
               </strong>
             </p>
 
             {alert.video && (
-
               <video
                 controls
                 style={{
                   width: "100%",
-                  maxWidth: "100%",
                   marginTop: "10px",
                   borderRadius: "8px"
                 }}
               >
                 <source src={`http://localhost:8000/${alert.video}`} />
               </video>
-
             )}
 
-            <div
-              style={{
-                marginTop: "12px",
-                display: "flex",
-                justifyContent: "flex-end"
-              }}
-            >
-
+            <div style={{ marginTop: "12px", display: "flex", justifyContent: "flex-end" }}>
               <button
                 onClick={() => setSelectedAlert(alert)}
                 style={{
@@ -205,7 +176,6 @@ const ManageAlerts = () => {
               >
                 <FaTrash />
               </button>
-
             </div>
 
           </motion.div>
@@ -213,8 +183,6 @@ const ManageAlerts = () => {
         ))}
 
       </div>
-
-
 
       {selectedAlert && (
 
@@ -234,6 +202,7 @@ const ManageAlerts = () => {
         >
 
           <motion.div
+            layout
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             style={{
@@ -242,27 +211,17 @@ const ManageAlerts = () => {
               borderRadius: "12px",
               width: "100%",
               maxWidth: "350px",
-              textAlign: "center",
-              boxSizing: "border-box"
+              textAlign: "center"
             }}
           >
 
             <h3>Delete Alert</h3>
 
             <p>
-              Delete alert
-              <strong> {selectedAlert.type}</strong>?
+              Delete alert <strong>{selectedAlert.type}</strong>?
             </p>
 
-            <div
-              style={{
-                marginTop: "20px",
-                display: "flex",
-                justifyContent: "center",
-                gap: "10px",
-                flexWrap: "wrap"
-              }}
-            >
+            <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
 
               <button onClick={() => setSelectedAlert(null)}>
                 Cancel
@@ -290,9 +249,7 @@ const ManageAlerts = () => {
       )}
 
     </motion.div>
-
   );
-
 };
 
 export default ManageAlerts;

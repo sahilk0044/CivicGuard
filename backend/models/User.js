@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+       profileImage: {
+      type: String,
+      default: ""
+    },
 
     mobile: {
       type: String,

@@ -4,6 +4,44 @@ import Authority from "../models/Authority.js";
 import bcrypt from "bcryptjs";
 import Admin from "../models/Admin.js";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+
+
+
+const sendEmail = async ({ to, subject, html }) => {
+  if (!to) throw new Error('No recipient specified for email');
+
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+    tls:{
+      rejectUnauthorized:false,
+    }
+  });
+
+  const mailOptions = { 
+    from: process.env.EMAIL, 
+    to, 
+    subject, 
+    html 
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        return reject(error);
+      }
+      console.log('Email sent:', info && info.response ? info.response : info);
+      resolve(info);
+    });
+  });
+};
+
+
 
 
 export const Adminlogin = async (req, res) => {
@@ -31,7 +69,7 @@ export const Adminlogin = async (req, res) => {
     const token = jwt.sign(
       { id: admin._id, role: admin.role },
       process.env.JWT_SECRET,
-      { expiresIn: "30d" }   // longer login session for PWA
+      { expiresIn: "30h" }   // longer login session for PWA
     );
 
     res.status(200).json({
@@ -81,6 +119,7 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 /* ================= GET ALL ALERTS ================= */
 
@@ -136,10 +175,10 @@ export const getAlertsChart = async (req, res) => {
 
 /* ================= ADD AUTHORITY (ADMIN) ================= */
 
+
+
 export const addAuthority = async (req, res) => {
-
   try {
-
     const {
       name,
       email,
@@ -150,7 +189,6 @@ export const addAuthority = async (req, res) => {
     } = req.body;
 
     /* CHECK EXISTING AUTHORITY */
-
     const existingAuthority = await Authority.findOne({ email });
 
     if (existingAuthority) {
@@ -159,12 +197,14 @@ export const addAuthority = async (req, res) => {
       });
     }
 
-    /* HASH PASSWORD */
+    /* GENERATE PASSWORD IF NOT PROVIDED */
+    const plainPassword =
+      password || Math.random().toString(36).slice(-8);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    /* HASH PASSWORD */
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     /* CREATE AUTHORITY */
-
     const authority = new Authority({
       name,
       email,
@@ -180,17 +220,106 @@ export const addAuthority = async (req, res) => {
 
     await authority.save();
 
+    /* SEND EMAIL WITH CREDENTIALS */
+    const html = `
+      <h2>Welcome to CivicGuard 🚨</h2>
+      <p>Hello ${name},</p>
+
+      <p>Your authority account has been created.</p>
+
+      <h3>Login Credentials:</h3>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Password:</strong> ${plainPassword}</p>
+
+      <p>Please login and change your password immediately.</p>
+
+      <br/>
+      <p>Regards,<br/>CivicGuard Team</p>
+    `;
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Your Authority Account Credentials",
+        html
+      });
+    } catch (emailErr) {
+      console.error("Email sending failed:", emailErr);
+    }
+
     res.status(201).json({
-      message: "Authority added successfully",
+      message: "Authority added & credentials sent to email ✅",
       authority
     });
 
   } catch (error) {
-
     res.status(500).json({
       message: error.message
     });
+  }
+};
+export const getAdminProfile = async (req, res) => {
+  try {
+
+    // 🔥 Check if middleware attached user
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized: No user info"
+      });
+    }
+
+    const admin = await Admin.findById(req.user.id).select("-password");
+
+    // 🔥 Check if admin exists
+    if (!admin) {
+      return res.status(404).json({
+        message: "Admin not found"
+      });
+    }
+
+    res.status(200).json(admin);
+
+  } catch (error) {
+
+    console.error("Get Admin Profile Error:", error);
+
+    res.status(500).json({
+      error: error.message
+    });
 
   }
+};
 
+/* ================= UPDATE USER PROFILE ================= */
+
+export const updateAdminProfile = async (req, res) => {
+  try {
+
+    const updateData = {};
+
+    if (req.file) {
+      updateData.profileImage = req.file.path;
+    }
+
+    const admin = await Admin.findByIdAndUpdate(
+      req.user.id,
+      updateData,
+      { new: true }
+    );
+
+    res.json({
+      message: "Profile updated successfully",
+      admin
+    });
+
+  } catch (error) {
+
+    console.log("UPDATE ERROR:", error);
+
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+
+  }
 };

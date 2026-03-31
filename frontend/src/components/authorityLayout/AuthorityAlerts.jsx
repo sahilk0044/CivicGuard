@@ -83,7 +83,7 @@ const AuthorityAlerts = () => {
 
           alerts.map(alert => (
 
-            <div className="col-lg-4 col-md-6" key={alert._id}>
+            <div className="col-lg-3 col-md-3" key={alert._id}>
 
               <motion.div
                 whileHover={{ scale: 1.05 }}

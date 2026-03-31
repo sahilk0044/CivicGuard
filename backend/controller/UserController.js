@@ -160,6 +160,56 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+
+
+
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Old password and new password are required",
+      });
+    }
+
+    // Get logged-in user
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Compare old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Old password is incorrect",
+      });
+    }
+
+    // Set new password (will be hashed via pre-save hook)
+    user.password = newPassword;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password changed successfully ✅",
+    });
+
+  } catch (error) {
+    console.error("changePassword error:", error);
+    return res.status(500).json({
+      message: "Failed to change password ❌",
+      error: error.message,
+    });
+  }
+};
+
 /* ================= GET USER PROFILE ================= */
 export const getUserProfile = async (req, res) => {
   try {
@@ -182,18 +232,21 @@ export const updateProfile = async (req, res) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
-
       return res.status(404).json({
         message: "User not found"
       });
-
     }
 
-    /* Update fields */
+    /* 🔥 SAFE FIELD UPDATES */
 
     if (name) user.name = name;
     if (email) user.email = email;
     if (mobile) user.mobile = mobile;
+
+    /* 🔥 IMAGE UPDATE (NEW) */
+    if (req.file) {
+      user.profileImage = req.file.path;
+    }
 
     await user.save();
 
@@ -204,6 +257,8 @@ export const updateProfile = async (req, res) => {
 
   } catch (error) {
 
+    console.log("USER UPDATE ERROR:", error);
+
     res.status(500).json({
       error: error.message
     });
@@ -211,7 +266,6 @@ export const updateProfile = async (req, res) => {
   }
 
 };
-
 /* ================= ADD EMERGENCY CONTACT ================= */
 export const addEmergencyContact = async (req, res) => {
   try {

@@ -10,11 +10,12 @@ import {
   updateProfile,
   sendSupportMessage,
   updateEmergencyContact,
-  forgotPassword
+  forgotPassword,
+  changePassword
 } from "../controller/UserController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
-
+import upload from "../middleware/upload.js";
 const UserRouter = express.Router();
 
 /* ================= USER AUTH ================= */
@@ -25,6 +26,7 @@ UserRouter.post("/register", registerUser);
 // Login User
 UserRouter.post("/login", loginUser);
 UserRouter.post("/forgotpassword", forgotPassword);
+UserRouter.put("/change-password",changePassword);
 
 UserRouter.post("/contact",sendContactMessage);
 UserRouter.post("/support",sendSupportMessage);
@@ -34,7 +36,7 @@ UserRouter.post("/support",sendSupportMessage);
 
 // Get logged in user profile
 UserRouter.get("/profile", authMiddleware, getUserProfile);
-UserRouter.put("/update-profile", authMiddleware, updateProfile);
+UserRouter.put("/update-profile", authMiddleware,  upload.single("profileImage"),updateProfile);
 
 
 /* ================= EMERGENCY CONTACTS ================= */

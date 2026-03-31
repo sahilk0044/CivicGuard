@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import AOS from "aos";
-import "aos/dist/aos.css";
 import { FaTrash, FaUser, FaPhone } from "react-icons/fa";
 
 const ManageUsers = () => {
@@ -11,39 +9,33 @@ const ManageUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    AOS.init({ duration: 800 });
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
-
     const res = await axios.get(
       "http://localhost:8000/api/admin/users"
     );
-
     setUsers(res.data);
   };
 
   const deleteUser = async () => {
-
     try {
-
       await axios.delete(
         `http://localhost:8000/api/admin/users/${selectedUser._id}`
       );
 
       setUsers(users.filter(user => user._id !== selectedUser._id));
-
       setSelectedUser(null);
 
     } catch (error) {
       console.log(error);
     }
-
   };
 
   return (
     <motion.div
+      layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       style={{
@@ -71,9 +63,9 @@ const ManageUsers = () => {
         {users.map(user => (
 
           <motion.div
+            layout
             key={user._id}
             whileHover={{ scale: 1.05 }}
-            data-aos="fade-up"
             style={{
               padding: "20px",
               borderRadius: "14px",
@@ -81,12 +73,41 @@ const ManageUsers = () => {
               backdropFilter: "blur(12px)",
               border: "1px solid rgba(255,255,255,0.1)",
               boxSizing: "border-box",
-              wordBreak: "break-word"
+              wordBreak: "break-word",
+              textAlign: "center"
             }}
           >
 
-            <div style={{ fontSize: "30px" }}>
-              <FaUser />
+            {/* ✅ PROFILE IMAGE */}
+            <div style={{ marginBottom: "10px" }}>
+              {user.profileImage ? (
+                <img
+                  src={`http://localhost:8000/${user.profileImage}`}
+                  alt="profile"
+                  style={{
+                    width: "70px",
+                    height: "70px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "2px solid #22c55e"
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "70px",
+                    height: "70px",
+                    borderRadius: "50%",
+                    background: "#1f2937",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "auto"
+                  }}
+                >
+                  <FaUser size={30} />
+                </div>
+              )}
             </div>
 
             <h4>{user.name}</h4>
@@ -99,28 +120,11 @@ const ManageUsers = () => {
               <FaPhone /> {user.mobile}
             </p>
 
-            <button
-              onClick={() => setSelectedUser(user)}
-              style={{
-                marginTop: "10px",
-                background: "#ef4444",
-                border: "none",
-                padding: "8px",
-                borderRadius: "8px",
-                color: "white",
-                cursor: "pointer",
-                width: "100%"
-              }}
-            >
-              <FaTrash /> Delete
-            </button>
-
           </motion.div>
 
         ))}
 
       </div>
-
 
       {/* DELETE MODAL */}
 
@@ -142,6 +146,7 @@ const ManageUsers = () => {
         >
 
           <motion.div
+            layout
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             style={{
@@ -150,8 +155,7 @@ const ManageUsers = () => {
               borderRadius: "12px",
               width: "100%",
               maxWidth: "350px",
-              textAlign: "center",
-              boxSizing: "border-box"
+              textAlign: "center"
             }}
           >
 
@@ -168,30 +172,22 @@ const ManageUsers = () => {
                 marginTop: "20px",
                 display: "flex",
                 gap: "10px",
-                justifyContent: "center",
-                flexWrap: "wrap"
+                justifyContent: "center"
               }}
             >
 
-              <button
-                onClick={() => setSelectedUser(null)}
-                style={{
-                  padding: "8px 14px",
-                  border: "none",
-                  borderRadius: "6px"
-                }}
-              >
+              <button onClick={() => setSelectedUser(null)}>
                 Cancel
               </button>
 
               <button
                 onClick={deleteUser}
                 style={{
-                  padding: "8px 14px",
                   background: "#ef4444",
+                  color: "white",
                   border: "none",
-                  borderRadius: "6px",
-                  color: "white"
+                  padding: "8px 14px",
+                  borderRadius: "6px"
                 }}
               >
                 Delete

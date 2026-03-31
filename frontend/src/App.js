@@ -29,43 +29,13 @@ import AuthorityLogin from "./components/authorityLayout/AuthorityLogin";
 import AdminLogin from "./components/adminLayout/AdminLogin";
 import AuthorityMap from "./components/authorityLayout/AuthorityMap";
 import ForgotPassword from "./components/guestLayout/ForgotPassword";
+import AuthorityProfile from "./components/authorityLayout/AuthorityProfile";
+import AdminProfile from "./components/adminLayout/AdminProfile";
+import ChangePassword from "./components/userLayout/ChangePassword";
 
 
 function App() {
-  useEffect(() => {
-
-    const verifyToken = async () => {
-
-      const token = localStorage.getItem("token");
-
-      if (!token) return;
-
-      try {
-
-        await axios.get(
-          "http://localhost:8000/api/users/verify-token",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-
-        console.log("User already authenticated");
-
-      } catch (error) {
-
-        console.log("Token invalid");
-
-        localStorage.removeItem("token");
-
-      }
-
-    };
-
-    verifyToken();
-
-  }, []);
+  
   return (
   <Routes>
     <Route path="/" element={<GuestLayout/>}>
@@ -89,6 +59,7 @@ function App() {
       <Route path="/user/support" element={<Support/>}/>
       <Route path="/user/emergency" element={<EmergencyAlert/>}/>
       <Route path="/user/alerts" element={<MyAlerts/>}/>
+      <Route path="/user/changepassword" element={<ChangePassword/>}/>
     </Route>
 
     <Route path="/admin" element={<AdminLayout/>}>
@@ -99,6 +70,7 @@ function App() {
     <Route path="/admin/alerts" element={<ManageAlerts/>}/>
     <Route path="/admin/reports" element={<Reports />} />
     <Route path="/admin/settings" element={<Settings />} />
+    <Route path="/admin/profile" element={<AdminProfile />} />
     
     
     </Route>
@@ -108,6 +80,7 @@ function App() {
       <Route path="/authority/dashboard" element={<AuthorityDashboard/>}/>
       <Route path="/authority/alerts" element={<AuthorityAlerts/>}/>
       <Route path="/authority/map" element={<AuthorityMap/>}/>
+      <Route path="/authority/profile" element={<AuthorityProfile/>}/>
       
       
     </Route>

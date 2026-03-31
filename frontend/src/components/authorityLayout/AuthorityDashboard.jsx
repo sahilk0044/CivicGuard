@@ -12,25 +12,25 @@ import {
 const AuthorityDashboard = () => {
 
   const [alerts, setAlerts] = useState([]);
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
+
     fetchAlerts();
 
-    // 🔥 SOCKET CONNECTION
     const socket = io("http://localhost:8000");
 
-    // 🔥 WHEN NEW ALERT COMES
+    // 🔥 NEW ALERT
     socket.on("newAlert", (newAlert) => {
 
-      // Only add if assigned to this authority
-      if (newAlert.authority === JSON.parse(localStorage.getItem("authority"))?._id) {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (newAlert.authority === user?._id) {
         setAlerts(prev => [newAlert, ...prev]);
       }
 
     });
 
-    // 🔥 WHEN ALERT UPDATED (resolved etc.)
+    // 🔥 ALERT UPDATED
     socket.on("alertUpdated", (updatedAlert) => {
 
       setAlerts(prev =>
@@ -47,15 +47,19 @@ const AuthorityDashboard = () => {
 
   }, []);
 
+  /* ================= FETCH ALERTS ================= */
+
   const fetchAlerts = async () => {
 
     try {
+
+      const token = localStorage.getItem("token"); // ✅ always fresh
 
       const res = await axios.get(
         "http://localhost:8000/api/authority/alerts",
         {
           headers: {
-            Authorization: `Bearer ${token}` // ✅ FIXED
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -70,6 +74,8 @@ const AuthorityDashboard = () => {
 
   };
 
+  /* ================= STATS ================= */
+
   const totalAlerts = alerts.length;
   const pendingAlerts = alerts.filter(a => a.status !== "resolved").length;
   const resolvedAlerts = alerts.filter(a => a.status === "resolved").length;
@@ -82,7 +88,7 @@ const AuthorityDashboard = () => {
         🚨 Authority Dashboard
       </h2>
 
-      {/* STATISTICS */}
+      {/* STATS */}
 
       <div className="row g-4">
 
@@ -142,7 +148,7 @@ const AuthorityDashboard = () => {
 
             <tbody>
 
-              {alerts.slice(0,5).map(alert => (
+              {alerts.slice(0, 5).map(alert => (
 
                 <tr key={alert._id}>
 

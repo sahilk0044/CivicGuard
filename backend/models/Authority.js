@@ -39,6 +39,10 @@ const authoritySchema = new mongoose.Schema(
         required: true,
       },
     },
+    profileImage: {
+  type: String,
+  default: ""
+},
 
     role: {
       type: String,
