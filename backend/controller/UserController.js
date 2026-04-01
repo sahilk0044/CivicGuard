@@ -121,42 +121,66 @@ export const loginUser = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   try {
+
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'Email is required' });
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    // Generate random 6-digit temporary password
-    const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log("Generated temp password:", tempPassword);
-
-    // Assign temporary password (will be hashed by pre-save hook)
-    user.password = tempPassword;
-    await user.save();
-
-    // Send temporary password via email
-    const html = `<p>Hello ${user.name},</p>
-                  <p>A password reset was requested for your account. Use the temporary password below to log in and then change your password immediately.</p>
-                  <p><strong>Temporary password:</strong> ${tempPassword}</p>
-                  <p>This temporary password is valid for a limited time. If you did not request this, please contact support immediately.</p>
-                  <p>Best regards,<br>Your Company Name</p>`;
-
-    try {
-      await sendEmail({ 
-        to: user.email, 
-        subject: 'Password Reset - Temporary Password', 
-        html 
-      });
-    } catch (emailErr) {
-      console.error('forgotPassword email error:', emailErr);
-      return res.status(500).json({ message: 'Temporary password created but failed to send email' });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
 
-    return res.status(200).json({ message: 'Temporary password sent to your email ✅' });
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 🔥 Generate temp password
+    const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+
+    console.log("Generated temp password:", tempPassword);
+
+    // ✅ HASH PASSWORD HERE (IMPORTANT)
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    user.password = hashedPassword;
+
+    await user.save();
+
+    // 📧 Send email
+    const html = `
+      <p>Hello ${user.name},</p>
+      <p>A password reset was requested for your account.</p>
+      <p><strong>Temporary password:</strong> ${tempPassword}</p>
+      <p>Please login and change your password immediately.</p>
+      <p>Best regards,<br>CivicGuard</p>
+    `;
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Password Reset - Temporary Password",
+        html
+      });
+    } catch (emailErr) {
+      console.error("Email error:", emailErr);
+      return res.status(500).json({
+        message: "Password created but email failed"
+      });
+    }
+
+    return res.status(200).json({
+      message: "Temporary password sent to your email ✅"
+    });
+
   } catch (error) {
-    console.error('forgotPassword error:', error);
-    return res.status(500).json({ message: 'Failed to reset password ❌', error: error.message });
+
+    console.error("forgotPassword error:", error);
+
+    return res.status(500).json({
+      message: "Failed to reset password ❌",
+      error: error.message
+    });
+
   }
 };
 

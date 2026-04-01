@@ -8,6 +8,7 @@ import {
   deleteAuthority,
   getAuthorityProfile,
   updateAuthorityProfile,
+  forgotPassword,
 } from "../controller/AuthorityController.js";
 
 import authorityMiddleware from "../middleware/authorityMiddleware.js";
@@ -18,7 +19,8 @@ const AuthorityRouter = express.Router();
 /* ================= AUTHORITY AUTH ================= */
 
 
-AuthorityRouter.post("/authority-login", loginAuthority);  //post /api/authority/login
+AuthorityRouter.post("/authority-login", loginAuthority); 
+AuthorityRouter.post("/forgot-password", forgotPassword); 
 
 /* ================= VIEW ALERTS ================= */
 

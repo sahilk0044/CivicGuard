@@ -10,10 +10,9 @@ import {
   FaUserShield,
   FaBell,
   FaChartBar,
-  FaCog,
   FaTimes,
-  FaMale,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaUser
 } from "react-icons/fa";
 
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -28,7 +27,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Authorities", path: "/admin/authorities", icon: <FaUserShield /> },
     { name: "Alerts", path: "/admin/alerts", icon: <FaBell /> },
     { name: "Reports", path: "/admin/reports", icon: <FaChartBar /> },
-    { name: "Profile", path: "/admin/profile" ,icon: <FaMale />},
+    { name: "Profile", path: "/admin/profile" ,icon: <FaUser />},
     { name: "Logout", path: "/admin/login",icon: <FaSignOutAlt /> }
   ];
 

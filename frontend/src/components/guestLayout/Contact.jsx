@@ -8,21 +8,35 @@ import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
 const Contact = () => {
 
-  const [message,setMessage] = useState("");
-  const [type,setType] = useState("");
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
 
   const [formData, setFormData] = useState({
-    name:"",
-    email:"",
-    message:""
+    name: "",
+    email: "",
+    message: ""
   });
 
   useEffect(() => {
     AOS.init({ duration: 1000 });
   }, []);
 
-  const handleChange = (e)=>{
-    setFormData({...formData,[e.target.name]:e.target.value});
+  /* 🔥 WHATSAPP + CHAT FUNCTIONS */
+
+  const openWhatsApp = () => {
+    const phone = "919876543210"; // 🔥 replace this
+    const message = "Hello, I need help regarding CivicGuard";
+
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  };
+
+  const openChat = () => {
+    alert("💬 Live chat coming soon! 🚀");
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -40,9 +54,9 @@ const Contact = () => {
       setType("success");
 
       setFormData({
-        name:"",
-        email:"",
-        message:""
+        name: "",
+        email: "",
+        message: ""
       });
 
     } catch (err) {
@@ -98,8 +112,6 @@ const Contact = () => {
         transform:scale(1.05);
       }
 
-      /* MESSAGE BOX */
-
       .message-box{
         padding:10px;
         border-radius:8px;
@@ -141,19 +153,14 @@ const Contact = () => {
       {/* HERO */}
 
       <section className="contact-hero">
-
         <Container>
-
           <h1 className="contact-title" data-aos="fade-down">
             Contact CivicGuard
           </h1>
-
           <p className="contact-sub" data-aos="fade-up">
             Reach out to us for support, safety guidance, or project inquiries.
           </p>
-
         </Container>
-
       </section>
 
       {/* CONTACT SECTION */}
@@ -164,7 +171,7 @@ const Contact = () => {
 
           <Row>
 
-            {/* CONTACT FORM */}
+            {/* FORM */}
 
             <Col md={6} data-aos="fade-right">
 
@@ -173,8 +180,6 @@ const Contact = () => {
                 <h4 className="mb-4">Send us a message</h4>
 
                 <Form onSubmit={handleSubmit}>
-
-                  {/* MESSAGE ABOVE FIRST FIELD */}
 
                   {message && (
                     <div className={`message-box ${type}`}>
@@ -226,52 +231,63 @@ const Contact = () => {
 
             </Col>
 
-            {/* CONTACT INFO */}
+            {/* INFO + SUPPORT */}
 
             <Col md={6}>
 
               <Row>
 
                 <Col md={12} className="mb-4" data-aos="zoom-in">
-
                   <Card className="info-card">
-
                     <FaPhoneAlt className="info-icon"/>
-
                     <h5>Emergency Helpline</h5>
-
-                    <p>Dial <strong>112</strong> for immediate assistance.</p>
-
+                    <p>Dial <strong>112</strong></p>
                   </Card>
-
                 </Col>
 
                 <Col md={12} className="mb-4" data-aos="zoom-in" data-aos-delay="200">
-
                   <Card className="info-card">
-
                     <FaEnvelope className="info-icon"/>
-
                     <h5>Email Support</h5>
-
                     <p>civicguard.support@gmail.com</p>
-
                   </Card>
-
                 </Col>
 
-                <Col md={12} data-aos="zoom-in" data-aos-delay="400">
+                <Col md={12} className="mb-4" data-aos="zoom-in" data-aos-delay="400">
+                  <Card className="info-card">
+                    <FaMapMarkerAlt className="info-icon"/>
+                    <h5>Location</h5>
+                    <p>India Safety Technology Network</p>
+                  </Card>
+                </Col>
 
+                {/* 🔥 NEW SUPPORT CARD */}
+
+                <Col md={12} data-aos="zoom-in" data-aos-delay="600">
                   <Card className="info-card">
 
-                    <FaMapMarkerAlt className="info-icon"/>
+                    <h5>Need Instant Help?</h5>
+                    <p>Chat with us or reach via WhatsApp</p>
 
-                    <h5>Location</h5>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
 
-                    <p>India Safety Technology Network</p>
+                      <Button
+                        onClick={openChat}
+                        style={{ background: "#3b82f6", border: "none" }}
+                      >
+                        💬 Chat
+                      </Button>
+
+                      <Button
+                        onClick={openWhatsApp}
+                        style={{ background: "#25D366", border: "none" }}
+                      >
+                        📱 WhatsApp
+                      </Button>
+
+                    </div>
 
                   </Card>
-
                 </Col>
 
               </Row>

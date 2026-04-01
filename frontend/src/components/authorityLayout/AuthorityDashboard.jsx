@@ -12,6 +12,13 @@ import {
 const AuthorityDashboard = () => {
 
   const [alerts, setAlerts] = useState([]);
+  const [notifications, setNotifications] = useState([]); // 🔔 NEW
+  const [showDropdown, setShowDropdown] = useState(false); // 🔔 NEW
+
+  const playSound = () => {
+    const audio = new Audio("/alert.mp3"); // put file in public folder
+    audio.play();
+  };
 
   useEffect(() => {
 
@@ -25,7 +32,14 @@ const AuthorityDashboard = () => {
       const user = JSON.parse(localStorage.getItem("user"));
 
       if (newAlert.authority === user?._id) {
+
         setAlerts(prev => [newAlert, ...prev]);
+
+        // 🔔 ADD NOTIFICATION
+        setNotifications(prev => [newAlert, ...prev]);
+
+        // 🔊 PLAY SOUND
+        playSound();
       }
 
     });
@@ -50,10 +64,9 @@ const AuthorityDashboard = () => {
   /* ================= FETCH ALERTS ================= */
 
   const fetchAlerts = async () => {
-
     try {
 
-      const token = localStorage.getItem("token"); // ✅ always fresh
+      const token = localStorage.getItem("token");
 
       const res = await axios.get(
         "http://localhost:8000/api/authority/alerts",
@@ -67,11 +80,8 @@ const AuthorityDashboard = () => {
       setAlerts(res.data);
 
     } catch (error) {
-
       console.log("Fetch error:", error.response?.data || error);
-
     }
-
   };
 
   /* ================= STATS ================= */
@@ -82,7 +92,74 @@ const AuthorityDashboard = () => {
 
   return (
 
-    <div style={{ color: "white" }}>
+    <div style={{ color: "white", position: "relative" }}>
+
+      {/* 🔔 NOTIFICATION BELL */}
+      <div style={{ position: "absolute", top: "0", right: "0" }}>
+
+        <div
+          style={{ position: "relative", cursor: "pointer" }}
+          onClick={() => {
+            setShowDropdown(!showDropdown);
+            setNotifications([]); // clear after opening
+          }}
+        >
+          <FaBell size={24} />
+
+          {/* 🔴 BADGE */}
+          {notifications.length > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: "-5px",
+                right: "-8px",
+                background: "red",
+                color: "white",
+                borderRadius: "50%",
+                padding: "3px 6px",
+                fontSize: "12px"
+              }}
+            >
+              {notifications.length}
+            </span>
+          )}
+        </div>
+
+        {/* 📥 DROPDOWN */}
+        {showDropdown && (
+          <div
+            style={{
+              position: "absolute",
+              right: "0",
+              top: "30px",
+              width: "280px",
+              background: "#0f172a",
+              borderRadius: "10px",
+              padding: "10px",
+              zIndex: 1000,
+              maxHeight: "300px",
+              overflowY: "auto"
+            }}
+          >
+            {notifications.length === 0 ? (
+              <p style={{ textAlign: "center" }}>No new alerts</p>
+            ) : (
+              notifications.map((n, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: "10px",
+                    borderBottom: "1px solid #1e293b"
+                  }}
+                >
+                  🚨 {n.type} at {n.locationName}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+      </div>
 
       <h2 style={{ marginBottom: "25px", fontWeight: "600" }}>
         🚨 Authority Dashboard

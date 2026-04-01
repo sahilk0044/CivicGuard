@@ -32,6 +32,7 @@ import ForgotPassword from "./components/guestLayout/ForgotPassword";
 import AuthorityProfile from "./components/authorityLayout/AuthorityProfile";
 import AdminProfile from "./components/adminLayout/AdminProfile";
 import ChangePassword from "./components/userLayout/ChangePassword";
+import ForgotPassword1 from "./components/authorityLayout/ForgotPassword1";
 
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
       <Route path="forgotpassword" element={<ForgotPassword/>}/>
       <Route path="/authority/login" element={<AuthorityLogin />} />
       <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/forgot-password" element={<ForgotPassword1 />} />
     </Route>
 
     <Route path="/user" element={<UserLayout/>}>

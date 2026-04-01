@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
+
 const Support = () => {
 
   const [formData, setFormData] = useState({
@@ -50,45 +51,57 @@ const Support = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
+    try {
 
-    const res = await axios.post(
-      "http://localhost:8000/api/users/support",
-      formData
-    );
+      const res = await axios.post(
+        "http://localhost:8000/api/users/support",
+        formData
+      );
 
-    if (res.status === 200) {
+      if (res.status === 200) {
+        setSuccess(true);
+        setError(false);
 
-      setSuccess(true);
-      setError(false);
+        setFormData({
+          name: "",
+          email: "",
+          message: ""
+        });
+      }
 
-      setFormData({
-        name: "",
-        email: "",
-        message: ""
-      });
-
+    } catch (err) {
+      console.error(err);
+      setError(true);
     }
 
-  } catch (err) {
+    setLoading(false);
 
-    console.error(err);
-    setError(true);
+    setTimeout(() => {
+      setSuccess(false);
+      setError(false);
+    }, 4000);
+  };
 
-  }
+  /* 🔥 WHATSAPP + CHAT FUNCTIONS */
 
-  setLoading(false);
+  const openWhatsApp = () => {
+    const phone = "8660455892"; // 🔥 replace with your number
+    const message = `Hello, I need support regarding CivicGuard`;
 
-  setTimeout(() => {
-    setSuccess(false);
-    setError(false);
-  }, 4000);
-};
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  };
+
+  const openChat = () => {
+    alert("💬 Live chat coming soon! 🚀");
+  };
+
   return (
+
     <div
       style={{
         minHeight: "100vh",
@@ -99,12 +112,11 @@ const Support = () => {
     >
       <Container>
 
-        {/* Heading */}
+        {/* HEADING */}
 
         <motion.div
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
           className="text-center text-white mb-5"
         >
           <h1 style={{ fontWeight: "700" }}>CivicGuard Support</h1>
@@ -113,6 +125,8 @@ const Support = () => {
           </p>
         </motion.div>
 
+        {/* FORM */}
+
         <Row className="justify-content-center">
 
           <Col md={7}>
@@ -120,14 +134,9 @@ const Support = () => {
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
             >
 
-              <Card
-                className="shadow-lg border-0 rounded-4"
-                data-aos="fade-up"
-                style={{ backdropFilter: "blur(10px)" }}
-              >
+              <Card className="shadow-lg border-0 rounded-4">
 
                 <Card.Body className="p-4">
 
@@ -137,94 +146,64 @@ const Support = () => {
 
                   {success && (
                     <Alert variant="success">
-                      ✅ Message sent successfully! Our team will contact you soon.
+                      ✅ Message sent successfully!
                     </Alert>
                   )}
 
                   {error && (
                     <Alert variant="danger">
-                      ❌ Failed to send message. Please try again.
+                      ❌ Failed to send message.
                     </Alert>
                   )}
 
                   <Form onSubmit={handleSubmit}>
 
                     <Form.Group className="mb-3">
-
                       <Form.Label>Name</Form.Label>
-
                       <Form.Control
                         type="text"
-                        placeholder="Enter your name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
                         required
                       />
-
                     </Form.Group>
 
                     <Form.Group className="mb-3">
-
                       <Form.Label>Email</Form.Label>
-
                       <Form.Control
                         type="email"
-                        placeholder="Enter your email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
                         required
                       />
-
                     </Form.Group>
 
                     <Form.Group className="mb-4">
-
                       <Form.Label>Message</Form.Label>
-
                       <Form.Control
                         as="textarea"
                         rows={4}
-                        placeholder="Describe your issue or question..."
                         name="message"
                         value={formData.message}
                         onChange={handleChange}
                         required
                       />
-
                     </Form.Group>
 
                     <div className="d-grid">
 
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
+                      <Button type="submit" disabled={loading}>
 
-                        <Button
-                          variant="primary"
-                          type="submit"
-                          size="lg"
-                          disabled={loading}
-                        >
+                        {loading ? (
+                          <>
+                            <Spinner size="sm" className="me-2" />
+                            Sending...
+                          </>
+                        ) : "Send Message"}
 
-                          {loading ? (
-                            <>
-                              <Spinner
-                                animation="border"
-                                size="sm"
-                                className="me-2"
-                              />
-                              Sending...
-                            </>
-                          ) : (
-                            "Send Message"
-                          )}
-
-                        </Button>
-
-                      </motion.div>
+                      </Button>
 
                     </div>
 
@@ -240,29 +219,61 @@ const Support = () => {
 
         </Row>
 
-        {/* Support Features */}
+        {/* 🔥 QUICK SUPPORT (NEW SECTION) */}
+
+        <Row className="justify-content-center mt-5">
+
+          <Col md={6}>
+
+            <Card className="text-center p-4 shadow-lg border-0 rounded-4">
+
+              <h4>Need Instant Help?</h4>
+
+              <p style={{ opacity: 0.7 }}>
+                Chat with us instantly or reach out via WhatsApp
+              </p>
+
+              <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+
+                <Button
+                  onClick={openChat}
+                  style={{ background: "#3b82f6", border: "none" }}
+                >
+                  💬 Chat with Us
+                </Button>
+
+                <Button
+                  onClick={openWhatsApp}
+                  style={{ background: "#25D366", border: "none" }}
+                >
+                  📱 WhatsApp Support
+                </Button>
+
+              </div>
+
+            </Card>
+
+          </Col>
+
+        </Row>
+
+        {/* FEATURES */}
 
         <Row className="text-white text-center mt-5">
 
-          <Col md={4} data-aos="fade-up">
-
+          <Col md={4}>
             <h5>⚡ Fast Response</h5>
-            <p>Our support team responds as quickly as possible.</p>
-
+            <p>Quick assistance from our support team.</p>
           </Col>
 
-          <Col md={4} data-aos="fade-up" data-aos-delay="200">
-
-            <h5>🔒 Secure Support</h5>
-            <p>Your data and messages remain completely secure.</p>
-
+          <Col md={4}>
+            <h5>🔒 Secure</h5>
+            <p>Your data is always safe.</p>
           </Col>
 
-          <Col md={4} data-aos="fade-up" data-aos-delay="400">
-
-            <h5>🛟 Civic Assistance</h5>
-            <p>Helping citizens connect with the right authorities.</p>
-
+          <Col md={4}>
+            <h5>🛟 Assistance</h5>
+            <p>Connecting you with authorities.</p>
           </Col>
 
         </Row>

@@ -2,6 +2,41 @@ import Authority from "../models/Authority.js";
 import Alert from "../models/Alert.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+
+
+const sendEmail = async ({ to, subject, html }) => {
+  if (!to) throw new Error('No recipient specified for email');
+
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+    tls:{
+      rejectUnauthorized:false,
+    }
+  });
+
+  const mailOptions = { 
+    from: process.env.EMAIL, 
+    to, 
+    subject, 
+    html 
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        return reject(error);
+      }
+      console.log('Email sent:', info && info.response ? info.response : info);
+      resolve(info);
+    });
+  });
+};
 
 
 /* ================= LOGIN AUTHORITY ================= */
@@ -62,8 +97,76 @@ export const loginAuthority = async (req, res) => {
   } catch (error) {
 
     console.error("Login Error:", error);
+    console.log("Entered:", password);
+console.log("Stored:", authority.password);
 
     res.status(500).json({
+      error: error.message
+    });
+
+  }
+};
+
+
+export const forgotPassword = async (req, res) => {
+  try {
+
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const authority = await Authority.findOne({ email });
+
+    if (!authority) {
+      return res.status(404).json({ message: "Authority not found" });
+    }
+
+    // 🔥 Generate temp password
+    const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+
+    console.log("Generated temp password:", tempPassword);
+
+    // ✅ HASH PASSWORD HERE (IMPORTANT)
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    authority.password = hashedPassword;
+
+    await authority.save();
+
+    // 📧 Send email
+    const html = `
+      <p>Hello ${authority.name},</p>
+      <p>A password reset was requested for your account.</p>
+      <p><strong>Temporary password:</strong> ${tempPassword}</p>
+      <p>Please login and change your password immediately.</p>
+      <p>Best regards,<br>CivicGuard</p>
+    `;
+
+    try {
+      await sendEmail({
+        to: authority.email,
+        subject: "Password Reset - Temporary Password",
+        html
+      });
+    } catch (emailErr) {
+      console.error("Email error:", emailErr);
+      return res.status(500).json({
+        message: "Password created but email failed"
+      });
+    }
+
+    return res.status(200).json({
+      message: "Temporary password sent to your email ✅"
+    });
+
+  } catch (error) {
+
+    console.error("forgotPassword error:", error);
+
+    return res.status(500).json({
+      message: "Failed to reset password ❌",
       error: error.message
     });
 
