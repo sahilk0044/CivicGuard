@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Card, Form, Button, Alert } from "react-bootstrap";
+import { Container, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import axios from "axios";
 
@@ -17,7 +17,6 @@ const ForgotPassword1 = () => {
     setError("");
 
     try {
-
       setLoading(true);
 
       const res = await axios.post(
@@ -35,71 +34,100 @@ const ForgotPassword1 = () => {
       );
 
       setLoading(false);
-
     }
   };
 
   return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #141E30, #243B55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Container className="d-flex justify-content-center align-items-center">
 
-    <Container className="d-flex justify-content-center align-items-center vh-100">
-
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-
-        <Card
-          className="shadow border-0"
-          style={{ width: "400px", borderRadius: "15px" }}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
 
-          <Card.Body>
+          <Card
+            style={{
+              width: "400px",
+              borderRadius: "20px",
+              background: "rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "#fff",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
+            }}
+          >
+            <Card.Body style={{ padding: "30px" }}>
 
-            <h3 className="text-center mb-3">
-              🔐 Forgot Password
-            </h3>
+              <h3 className="text-center mb-3" style={{ fontWeight: "600" }}>
+                🔐 Forgot Password
+              </h3>
 
-            <p className="text-muted text-center">
-              Enter your email to receive a temporary password
-            </p>
+              <p className="text-center mb-4" style={{ color: "#ccc" }}>
+                Enter your email to receive a temporary password
+              </p>
 
-            {message && <Alert variant="success">{message}</Alert>}
-            {error && <Alert variant="danger">{error}</Alert>}
+              {message && <Alert variant="success">{message}</Alert>}
+              {error && <Alert variant="danger">{error}</Alert>}
 
-            <Form onSubmit={handleSubmit}>
+              <Form onSubmit={handleSubmit}>
 
-              <Form.Group className="mb-3">
+                <Form.Group className="mb-3">
+                  <Form.Label>Email Address</Form.Label>
 
-                <Form.Label>Email Address</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    style={{
+                      borderRadius: "12px",
+                      padding: "12px",
+                    }}
+                  />
+                </Form.Group>
 
-                <Form.Control
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <Button
+                  type="submit"
+                  className="w-100"
+                  disabled={loading}
+                  style={{
+                    borderRadius: "12px",
+                    padding: "12px",
+                    fontWeight: "600",
+                    background: "linear-gradient(135deg, #36D1DC, #5B86E5)",
+                    border: "none",
+                    transition: "0.3s",
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner size="sm" /> Sending...
+                    </>
+                  ) : (
+                    "Send Temporary Password"
+                  )}
+                </Button>
 
-              </Form.Group>
+              </Form>
 
-              <Button
-                type="submit"
-                className="w-100"
-                disabled={loading}
-              >
-                {loading ? "Sending..." : "Send Temporary Password"}
-              </Button>
+            </Card.Body>
+          </Card>
 
-            </Form>
+        </motion.div>
 
-          </Card.Body>
-
-        </Card>
-
-      </motion.div>
-
-    </Container>
-
+      </Container>
+    </div>
   );
 };
 

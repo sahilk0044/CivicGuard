@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import Admin from "../models/Admin.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import fs from "fs";
 
 
 
@@ -290,14 +291,35 @@ export const getAdminProfile = async (req, res) => {
   }
 };
 
-/* ================= UPDATE USER PROFILE ================= */
+/* ================= UPDATE Admin PROFILE ================= */
+
+
 
 export const updateAdminProfile = async (req, res) => {
   try {
 
+    // 🔍 Get current admin first (to delete old image)
+    const existingAdmin = await Admin.findById(req.user.id);
+
+    if (!existingAdmin) {
+      return res.status(404).json({
+        message: "Admin not found"
+      });
+    }
+
     const updateData = {};
 
     if (req.file) {
+
+      // ✅ DELETE OLD IMAGE
+      if (
+        existingAdmin.profileImage &&
+        fs.existsSync(existingAdmin.profileImage)
+      ) {
+        fs.unlinkSync(existingAdmin.profileImage);
+      }
+
+      // ✅ SAVE NEW IMAGE
       updateData.profileImage = req.file.path;
     }
 

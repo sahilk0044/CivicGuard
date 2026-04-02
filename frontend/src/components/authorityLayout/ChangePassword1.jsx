@@ -2,9 +2,9 @@ import React from "react";
 import axios from "axios";
 import { Container, Row, Col, Form, Button, Alert, Spinner, Card } from "react-bootstrap";
 
-const API_BASE = "http://localhost:8000/api/users";
+const API_BASE = "http://localhost:8000/api/authority";
 
-export default class ChangePassword extends React.Component {
+export default class ChangePassword1 extends React.Component {
   state = {
     currentPassword: "",
     newPassword: "",
@@ -82,7 +82,7 @@ export default class ChangePassword extends React.Component {
       <div
         style={{
           minHeight: "100vh",
-          background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
+          background: "linear-gradient(135deg, #141E30, #243B55)",
           display: "flex",
           alignItems: "center",
         }}
@@ -90,28 +90,28 @@ export default class ChangePassword extends React.Component {
         <Container>
           <Row className="justify-content-center">
             <Col xs={12} md={8} lg={6}>
-              
+
               <Card
                 style={{
                   borderRadius: "20px",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(15px)",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "rgba(255, 255, 255, 0.08)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
                   color: "#fff",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                  boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
                 }}
               >
-                <Card.Body style={{ padding: "30px" }}>
-                  
+                <Card.Body style={{ padding: "35px" }}>
+
                   <h3 className="text-center mb-4" style={{ fontWeight: "600" }}>
-                    🔐 Change Password
+                    🛡️ Authority Password Update
                   </h3>
 
                   {success && <Alert variant="success">{success}</Alert>}
                   {error && <Alert variant="danger">{error}</Alert>}
 
                   <Form onSubmit={this.handleSubmit}>
-                    
+
                     <Form.Group className="mb-3">
                       <Form.Label>Current Password</Form.Label>
                       <Form.Control
@@ -122,7 +122,7 @@ export default class ChangePassword extends React.Component {
                         onChange={this.handleChange}
                         required
                         style={{
-                          borderRadius: "10px",
+                          borderRadius: "12px",
                           padding: "12px",
                         }}
                       />
@@ -135,12 +135,12 @@ export default class ChangePassword extends React.Component {
                           <Form.Control
                             name="newPassword"
                             type="password"
-                            placeholder="Min 6 characters"
+                            placeholder="Minimum 6 characters"
                             value={newPassword}
                             onChange={this.handleChange}
                             required
                             style={{
-                              borderRadius: "10px",
+                              borderRadius: "12px",
                               padding: "12px",
                             }}
                           />
@@ -153,12 +153,12 @@ export default class ChangePassword extends React.Component {
                           <Form.Control
                             name="confirmPassword"
                             type="password"
-                            placeholder="Confirm password"
+                            placeholder="Re-enter password"
                             value={confirmPassword}
                             onChange={this.handleChange}
                             required
                             style={{
-                              borderRadius: "10px",
+                              borderRadius: "12px",
                               padding: "12px",
                             }}
                           />
@@ -174,7 +174,7 @@ export default class ChangePassword extends React.Component {
                           borderRadius: "12px",
                           padding: "12px",
                           fontWeight: "600",
-                          background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                          background: "linear-gradient(135deg, #36D1DC, #5B86E5)",
                           border: "none",
                           transition: "0.3s",
                         }}
@@ -184,7 +184,7 @@ export default class ChangePassword extends React.Component {
                             <Spinner size="sm" /> Updating...
                           </>
                         ) : (
-                          "Change Password"
+                          "Update Password"
                         )}
                       </Button>
                     </div>

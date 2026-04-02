@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import {
@@ -16,7 +16,9 @@ const AuthorityProfile = () => {
   const [profile, setProfile] = useState({});
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
-  const [image, setImage] = useState(null); // ✅ NEW
+  const [image, setImage] = useState(null);
+
+  const fileInputRef = useRef(); // ✅ NEW
 
   const token = localStorage.getItem("token");
 
@@ -50,49 +52,54 @@ const AuthorityProfile = () => {
     });
   };
 
-  // ✅ HANDLE IMAGE SELECT
+  /* ✅ CLICK AVATAR */
+  const handleAvatarClick = () => {
+    if (editing) {
+      fileInputRef.current.click();
+    }
+  };
+
+  /* ✅ IMAGE CHANGE */
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+    }
   };
 
   const saveProfile = async () => {
-  try {
+    try {
 
-    const data = new FormData();
-    data.append("phone", formData.phone);
+      const data = new FormData();
+      data.append("phone", formData.phone);
 
-    if (image) {
-      data.append("profileImage", image);
-    }
-
-    const res = await axios.put(
-      "http://localhost:8000/api/authority/profile",
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data"
-        }
+      if (image) {
+        data.append("profileImage", image);
       }
-    );
 
-    // ✅ IMPORTANT
-    const updated = res.data.authority;
+      const res = await axios.put(
+        "http://localhost:8000/api/authority/profile",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
 
-    setProfile(updated);     // update UI with backend data
-    setFormData(updated);    // keep form in sync
+      const updated = res.data.authority;
 
-    setEditing(false);
+      setProfile(updated);
+      setFormData(updated);
 
-    // ✅ reset image AFTER update
-    setTimeout(() => {
+      setEditing(false);
       setImage(null);
-    }, 200);
 
-  } catch (error) {
-    console.log("Update error:", error);
-  }
-};
+    } catch (error) {
+      console.log("Update error:", error);
+    }
+  };
 
   const cancelEdit = () => {
     setFormData(profile);
@@ -112,22 +119,36 @@ const AuthorityProfile = () => {
 
         <div className="profile-header">
 
-          {/* ✅ PROFILE IMAGE */}
-          {image ? (
-            <img
-              src={URL.createObjectURL(image)}
-              alt="preview"
-              className="profile-img"
-            />
-          ) : profile.profileImage ? (
-            <img
-              src={`http://localhost:8000/${profile.profileImage}`}
-              alt="profile"
-              className="profile-img"
-            />
-          ) : (
-            <FaUserShield size={60} />
-          )}
+          {/* ✅ CLICKABLE PROFILE IMAGE */}
+          <div
+            onClick={handleAvatarClick}
+            style={{ cursor: editing ? "pointer" : "default" }}
+          >
+            {image ? (
+              <img
+                src={URL.createObjectURL(image)}
+                alt="preview"
+                className="profile-img"
+              />
+            ) : profile.profileImage ? (
+              <img
+                src={`http://localhost:8000/${profile.profileImage}`}
+                alt="profile"
+                className="profile-img"
+              />
+            ) : (
+              <FaUserShield size={60} />
+            )}
+          </div>
+
+          {/* 🔥 HIDDEN INPUT */}
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+          />
 
           <h3>{profile.name}</h3>
 
@@ -136,15 +157,6 @@ const AuthorityProfile = () => {
           </span>
 
         </div>
-
-        {/* ✅ IMAGE INPUT (ONLY IN EDIT MODE) */}
-        {editing && (
-          <input
-            type="file"
-            onChange={handleImageChange}
-            style={{ marginBottom: "15px" }}
-          />
-        )}
 
         <div className="profile-body">
 
@@ -218,7 +230,7 @@ const AuthorityProfile = () => {
         width:100%;
         max-width:450px;
         background:rgba(255,255,255,0.05);
-        backdrop-filter:blur(10px);
+        backdrop-filter:blur(12px);
         padding:30px;
         border-radius:15px;
         border:1px solid rgba(255,255,255,0.08);
@@ -231,11 +243,17 @@ const AuthorityProfile = () => {
       }
 
       .profile-img{
-        width:100px;
-        height:100px;
+        width:110px;
+        height:110px;
         border-radius:50%;
         object-fit:cover;
         border:3px solid #22c55e;
+        transition:0.3s;
+      }
+
+      .profile-img:hover{
+        transform:scale(1.05);
+        box-shadow:0 5px 20px rgba(0,0,0,0.3);
       }
 
       .profile-body{
@@ -277,9 +295,7 @@ const AuthorityProfile = () => {
       `}</style>
 
     </div>
-
   );
-
 };
 
 export default AuthorityProfile;

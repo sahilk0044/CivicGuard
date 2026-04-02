@@ -32,6 +32,9 @@ const AuthoritySidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <NavLink to="/authority/alerts" onClick={closeSidebar}>
         <FaExclamationTriangle /> Alerts
       </NavLink>
+      <NavLink to="/authority/changepassword" onClick={closeSidebar}>
+        <FaExclamationTriangle /> Change Password
+      </NavLink>
 
       
 

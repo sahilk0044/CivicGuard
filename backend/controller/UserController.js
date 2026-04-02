@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import fs from "fs";
 
 
 // -------------------- EMAIL HELPER FUNCTION --------------------
@@ -198,7 +199,7 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Get logged-in user
+    // Get logged-in authority
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -216,8 +217,10 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Set new password (will be hashed via pre-save hook)
-    user.password = newPassword;
+    // 🔥 HASH NEW PASSWORD (same as forgotPassword)
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
 
     await user.save();
 
@@ -227,12 +230,15 @@ export const changePassword = async (req, res) => {
 
   } catch (error) {
     console.error("changePassword error:", error);
+
     return res.status(500).json({
       message: "Failed to change password ❌",
       error: error.message,
     });
   }
 };
+
+
 
 /* ================= GET USER PROFILE ================= */
 export const getUserProfile = async (req, res) => {
@@ -246,6 +252,8 @@ export const getUserProfile = async (req, res) => {
 };
 
 /* ================= UPDATE USER PROFILE ================= */
+
+
 
 export const updateProfile = async (req, res) => {
 
@@ -267,8 +275,15 @@ export const updateProfile = async (req, res) => {
     if (email) user.email = email;
     if (mobile) user.mobile = mobile;
 
-    /* 🔥 IMAGE UPDATE (NEW) */
+    /* 🔥 IMAGE UPDATE (WITH DELETE OLD IMAGE) */
     if (req.file) {
+
+      // ✅ DELETE OLD IMAGE
+      if (user.profileImage && fs.existsSync(user.profileImage)) {
+        fs.unlinkSync(user.profileImage);
+      }
+
+      // ✅ SAVE NEW IMAGE
       user.profileImage = req.file.path;
     }
 

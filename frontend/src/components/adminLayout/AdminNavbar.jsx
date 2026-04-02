@@ -45,7 +45,7 @@ const AdminNavbar = ({ setSidebarOpen }) => {
         </motion.div>
 
         <motion.div whileHover={{ scale: 1.2 }} style={{ cursor: "pointer" }}>
-          <FaUserCircle size={22} />
+          {/* <FaUserCircle size={22} /> */}
         </motion.div>
 
       </div>

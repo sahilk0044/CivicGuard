@@ -21,6 +21,8 @@ const ManageAuthorities = () => {
     longitude: ""
   });
 
+  const [image, setImage] = useState(null); // ✅ NEW
+
   useEffect(() => {
     AOS.init({ duration: 800 });
     fetchAuthorities();
@@ -60,17 +62,27 @@ const ManageAuthorities = () => {
 
     try {
 
+      // ✅ USE FORMDATA
+      const data = new FormData();
+
+      data.append("name", formData.name);
+      data.append("email", formData.email);
+      data.append("phone", formData.phone);
+      data.append("department", formData.department);
+      data.append("password", formData.password);
+      data.append("latitude", formData.latitude);
+      data.append("longitude", formData.longitude);
+
+      if (image) {
+        data.append("profileImage", image); // ✅ IMAGE
+      }
+
       await axios.post(
         "http://localhost:8000/api/admin/add-authority",
+        data,
         {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          department: formData.department,
-          password: formData.password,
-          location: {
-            latitude: formData.latitude,
-            longitude: formData.longitude
+          headers: {
+            "Content-Type": "multipart/form-data"
           }
         }
       );
@@ -87,6 +99,7 @@ const ManageAuthorities = () => {
         longitude: ""
       });
 
+      setImage(null); // reset image
       fetchAuthorities();
 
       setTimeout(() => {
@@ -242,6 +255,15 @@ const ManageAuthorities = () => {
             />
           </div>
 
+          {/* ✅ IMAGE INPUT */}
+          <div className="col-md-6">
+            <input
+              type="file"
+              className="form-control"
+              onChange={(e) => setImage(e.target.files[0])}
+            />
+          </div>
+
         </div>
 
         <div style={{ marginTop: "25px", textAlign: "right" }}>
@@ -260,7 +282,6 @@ const ManageAuthorities = () => {
         </div>
 
       </motion.form>
-
 
       {/* AUTHORITY GRID */}
 
@@ -282,20 +303,26 @@ const ManageAuthorities = () => {
               }}
             >
 
-              <div style={{ fontSize: "32px", marginBottom: "10px" }}>
-                <FaUserShield />
+              {/* ✅ SHOW IMAGE */}
+              <div style={{ marginBottom: "10px" }}>
+                {authority.profileImage ? (
+                  <img
+                    src={`http://localhost:8000/${authority.profileImage}`}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      objectFit: "cover"
+                    }}
+                  />
+                ) : (
+                  <FaUserShield size={32} />
+                )}
               </div>
 
               <h4>{authority.name}</h4>
-
-              <p style={{ opacity: 0.7 }}>
-                {authority.email}
-              </p>
-
-              <p>
-                <FaPhone /> {authority.phone}
-              </p>
-
+              <p style={{ opacity: 0.7 }}>{authority.email}</p>
+              <p><FaPhone /> {authority.phone}</p>
               <p style={{ fontSize: "14px" }}>
                 Department: {authority.department}
               </p>
@@ -314,69 +341,6 @@ const ManageAuthorities = () => {
         ))}
 
       </div>
-
-
-      {/* DELETE MODAL */}
-
-      {selectedAuthority && (
-
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            style={{
-              background: "#0f172a",
-              padding: "30px",
-              borderRadius: "12px",
-              textAlign: "center",
-              width: "350px"
-            }}
-          >
-
-            <h3>Delete Authority</h3>
-
-            <p>
-              Are you sure you want to delete
-              <br />
-              <strong>{selectedAuthority.name}</strong>?
-            </p>
-
-            <div style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent:"center" }}>
-
-              <button
-                onClick={() => setSelectedAuthority(null)}
-                className="btn btn-secondary"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={deleteAuthority}
-                className="btn btn-danger"
-              >
-                Delete
-              </button>
-
-            </div>
-
-          </motion.div>
-
-        </div>
-
-      )}
 
     </motion.div>
 

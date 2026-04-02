@@ -26,7 +26,7 @@ UserRouter.post("/register", registerUser);
 // Login User
 UserRouter.post("/login", loginUser);
 UserRouter.post("/forgotpassword", forgotPassword);
-UserRouter.put("/change-password",changePassword);
+UserRouter.post("/change-password",authMiddleware,changePassword);
 
 UserRouter.post("/contact",sendContactMessage);
 UserRouter.post("/support",sendSupportMessage);

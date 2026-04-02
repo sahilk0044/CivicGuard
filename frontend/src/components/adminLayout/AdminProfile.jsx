@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -15,10 +15,13 @@ const AdminProfile = () => {
     profileImage: null
   });
 
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+
+  const fileInputRef = useRef();
 
   useEffect(() => {
     AOS.init({ duration: 1000 });
@@ -32,10 +35,18 @@ const AdminProfile = () => {
 
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        setError("Unauthorized: Please login again");
+        setLoading(false);
+        return;
+      }
+
       const res = await axios.get(
         "http://localhost:8000/api/admin/admin-profile",
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
@@ -43,24 +54,40 @@ const AdminProfile = () => {
 
       setFormData({
         email: res.data.email,
-        role: res.data.role
+        role: res.data.role,
+        profileImage: null
       });
 
+      setPreview(null);
       setLoading(false);
 
     } catch (err) {
-      setError("Failed to load profile");
+      setError(err.response?.data?.message || "Failed to load profile");
       setLoading(false);
     }
   };
 
-  /* ================= HANDLE INPUT ================= */
+  /* ================= CLICK AVATAR ================= */
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const handleAvatarClick = () => {
+    if (editMode) {
+      fileInputRef.current.click();
+    }
+  };
+
+  /* ================= IMAGE CHANGE ================= */
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setFormData({
+        ...formData,
+        profileImage: file
+      });
+
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   /* ================= UPDATE PROFILE ================= */
@@ -72,31 +99,41 @@ const AdminProfile = () => {
 
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        setError("Unauthorized: Please login again");
+        return;
+      }
+
       const form = new FormData();
 
       if (formData.profileImage) {
         form.append("profileImage", formData.profileImage);
       }
 
-      const res = await axios.put(
+      await axios.put(
         "http://localhost:8000/api/admin/admin-profile",
         form,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // 🔥 FIX
             "Content-Type": "multipart/form-data"
           }
         }
       );
 
       setMessage("Profile updated successfully ✅");
+      setError(null);
       setEditMode(false);
+
       fetchProfile();
 
     } catch (err) {
-      setError("Failed to update profile ❌");
+      setError(err.response?.data?.message || "Failed to update profile ❌");
+      setMessage(null);
     }
   };
+
+  /* ================= LOADING ================= */
 
   if (loading) {
     return (
@@ -112,7 +149,7 @@ const AdminProfile = () => {
 
       .profile-page{
         min-height:100vh;
-        background: linear-gradient(135deg, #fdf2f8, #eef2ff, #e0f2fe);
+       background: linear-gradient(135deg, #0B1B3A, #08142b);
         display:flex;
         align-items:center;
         justify-content:center;
@@ -125,11 +162,12 @@ const AdminProfile = () => {
         background:linear-gradient(135deg,#ff3c3c,#007bff);
         color:white;
         padding:35px;
+        box-shadow:0 20px 45px rgba(0,0,0,0.25);
       }
 
       .profile-avatar{
-        width:90px;
-        height:90px;
+        width:100px;
+        height:100px;
         border-radius:50%;
         background:white;
         display:flex;
@@ -138,6 +176,13 @@ const AdminProfile = () => {
         margin:auto;
         margin-bottom:20px;
         overflow:hidden;
+        cursor:pointer;
+        transition:0.3s;
+      }
+
+      .profile-avatar:hover{
+        transform:scale(1.05);
+        box-shadow:0 5px 20px rgba(0,0,0,0.3);
       }
 
       .profile-avatar img{
@@ -156,17 +201,29 @@ const AdminProfile = () => {
               <Card className="profile-card">
                 <Card.Body>
 
-                  {/* PROFILE IMAGE */}
-                  <div className="profile-avatar">
-                    {user.profileImage ? (
-                      <img
-                        src={`http://localhost:8000/${user.profileImage}`}
-                        alt="profile"
-                      />
+                  {/* AVATAR */}
+                  <div
+                    className="profile-avatar"
+                    onClick={handleAvatarClick}
+                    style={{ cursor: editMode ? "pointer" : "default" }}
+                  >
+                    {preview ? (
+                      <img src={preview} alt="preview" />
+                    ) : user.profileImage ? (
+                      <img src={`http://localhost:8000/${user.profileImage}`} alt="profile" />
                     ) : (
                       <FaUser size={30} color="#007bff" />
                     )}
                   </div>
+
+                  {/* HIDDEN INPUT */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    style={{ display: "none" }}
+                  />
 
                   <h4 className="text-center mb-4">Admin Profile</h4>
 
@@ -175,44 +232,14 @@ const AdminProfile = () => {
 
                   <Form onSubmit={updateProfile}>
 
-                    {/* EMAIL */}
                     <Form.Group className="mb-3">
-                      <Form.Label>
-                        <FaEnvelope /> Email
-                      </Form.Label>
-
-                      <Form.Control
-                        type="email"
-                        value={formData.email}
-                        disabled
-                      />
+                      <Form.Label><FaEnvelope /> Email</Form.Label>
+                      <Form.Control type="email" value={formData.email} disabled />
                     </Form.Group>
 
-                    {/* ROLE */}
                     <Form.Group className="mb-3">
                       <Form.Label>🛡️ Role</Form.Label>
-
-                      <Form.Control
-                        type="text"
-                        value={formData.role}
-                        disabled
-                      />
-                    </Form.Group>
-
-                    {/* IMAGE */}
-                    <Form.Group className="mb-3">
-                      <Form.Label>Profile Image</Form.Label>
-
-                      <Form.Control
-                        type="file"
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            profileImage: e.target.files[0]
-                          })
-                        }
-                        disabled={!editMode}
-                      />
+                      <Form.Control type="text" value={formData.role} disabled />
                     </Form.Group>
 
                     {!editMode ? (

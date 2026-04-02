@@ -3,6 +3,7 @@ import Alert from "../models/Alert.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import fs from "fs";
 
 
 const sendEmail = async ({ to, subject, html }) => {
@@ -172,6 +173,58 @@ export const forgotPassword = async (req, res) => {
 
   }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Old password and new password are required",
+      });
+    }
+
+    // Get logged-in authority
+    const authority = await Authority.findById(req.user.id);
+
+    if (!authority) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Compare old password
+    const isMatch = await bcrypt.compare(oldPassword, authority.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Old password is incorrect",
+      });
+    }
+
+    // 🔥 HASH NEW PASSWORD (same as forgotPassword)
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    authority.password = hashedPassword;
+
+    await authority.save();
+
+    return res.status(200).json({
+      message: "Password changed successfully ✅",
+    });
+
+  } catch (error) {
+    console.error("changePassword error:", error);
+
+    return res.status(500).json({
+      message: "Failed to change password ❌",
+      error: error.message,
+    });
+  }
+};
+
+
 /* ================= VIEW ALERTS ================= */
 
 
@@ -301,12 +354,14 @@ export const getAuthorityProfile = async (req, res) => {
 
 /* ================= UPDATE AUTHORITY PROFILE ================= */
 
+
+
 export const updateAuthorityProfile = async (req, res) => {
   try {
 
     const { phone } = req.body;
 
-    // ✅ Use _id (better than id)
+    // ✅ Get existing authority (needed for deleting old image)
     const authority = await Authority.findById(req.user._id);
 
     if (!authority) {
@@ -318,8 +373,18 @@ export const updateAuthorityProfile = async (req, res) => {
     // ✅ Update phone
     authority.phone = phone || authority.phone;
 
-    // ✅ IMPORTANT: SAVE IMAGE
+    // ✅ IMAGE UPDATE (WITH DELETE OLD IMAGE)
     if (req.file) {
+
+      // 🔥 DELETE OLD IMAGE
+      if (
+        authority.profileImage &&
+        fs.existsSync(authority.profileImage)
+      ) {
+        fs.unlinkSync(authority.profileImage);
+      }
+
+      // ✅ SAVE NEW IMAGE
       authority.profileImage = req.file.path;
     }
 

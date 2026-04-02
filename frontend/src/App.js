@@ -33,6 +33,7 @@ import AuthorityProfile from "./components/authorityLayout/AuthorityProfile";
 import AdminProfile from "./components/adminLayout/AdminProfile";
 import ChangePassword from "./components/userLayout/ChangePassword";
 import ForgotPassword1 from "./components/authorityLayout/ForgotPassword1";
+import ChangePassword1 from "./components/authorityLayout/ChangePassword1";
 
 
 function App() {
@@ -83,6 +84,7 @@ function App() {
       <Route path="/authority/alerts" element={<AuthorityAlerts/>}/>
       <Route path="/authority/map" element={<AuthorityMap/>}/>
       <Route path="/authority/profile" element={<AuthorityProfile/>}/>
+      <Route path="/authority/changepassword" element={<ChangePassword1/>}/>
       
       
     </Route>
