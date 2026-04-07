@@ -6,7 +6,10 @@ import {
   FaUserShield,
 
   FaSignOutAlt,
-  FaUser
+  FaUser,
+  FaSortAlphaUp,
+  FaArchive,
+  FaCode
 } from "react-icons/fa";
 
 const AuthoritySidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -33,7 +36,7 @@ const AuthoritySidebar = ({ sidebarOpen, setSidebarOpen }) => {
         <FaExclamationTriangle /> Alerts
       </NavLink>
       <NavLink to="/authority/changepassword" onClick={closeSidebar}>
-        <FaExclamationTriangle /> Change Password
+        <FaCode /> Change Password
       </NavLink>
 
       

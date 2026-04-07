@@ -8,10 +8,10 @@ import bodyParser from "body-parser";
 import { Server } from "socket.io";
 
 import UserRouter from "./router/UserRouter.js";
-import AlertRouter from "./router/AlertRouter.js";
 import AdminRouter from "./router/AdminRouter.js";
 import AuthorityRouter from "./router/AuthorityRouter.js";
 import SettingsRouter from "./router/SettingsRouter.js";
+import AlertRouter1 from "./router/AlertRouter1.js";
 
 const app = express();
 
@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 /* ================= ROUTES ================= */
 
 app.use("/api/users", UserRouter);
-app.use("/api/alerts", AlertRouter);
+app.use("/api/alerts", AlertRouter1);
 app.use("/api/admin", AdminRouter);
 app.use("/api/authority", AuthorityRouter);
 app.use("/api/setting", SettingsRouter);

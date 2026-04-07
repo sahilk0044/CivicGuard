@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 import {
   FaBell,
   FaCheckCircle,
@@ -9,55 +10,70 @@ import {
   FaMapMarkerAlt
 } from "react-icons/fa";
 
+const socket = io("http://localhost:8000");
+
 const AuthorityDashboard = () => {
 
   const [alerts, setAlerts] = useState([]);
-  const [notifications, setNotifications] = useState([]); // 🔔 NEW
-  const [showDropdown, setShowDropdown] = useState(false); // 🔔 NEW
+  const [notifications, setNotifications] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
+  const navigate = useNavigate();
+  const audioRef = useRef(null);
+
+  /* 🔊 PLAY SOUND */
   const playSound = () => {
-    const audio = new Audio("/alert.mp3"); // put file in public folder
-    audio.play();
+    if (audioRef.current) {
+      audioRef.current.muted = false;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
   };
 
+  /* 🔊 INIT AUDIO */
+  useEffect(() => {
+    audioRef.current = new Audio("/alert.mp3");
+    audioRef.current.muted = true;
+    audioRef.current.play().catch(() => {});
+  }, []);
+
+  /* 🔥 JOIN ROOM */
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?._id) {
+      socket.emit("join", user._id);
+      console.log("Joined room:", user._id);
+    }
+  }, []);
+
+  /* 🔥 SOCKET */
   useEffect(() => {
 
     fetchAlerts();
 
-    const socket = io("http://localhost:8000");
+    const handler = (data) => {
+      const newAlert = data.alert;
 
-    // 🔥 NEW ALERT
-    socket.on("newAlert", (newAlert) => {
+      playSound();
 
-      const user = JSON.parse(localStorage.getItem("user"));
+      setAlerts(prev => {
+        const exists = prev.some(a => a._id === newAlert._id);
+        if (exists) return prev;
+        return [newAlert, ...prev];
+      });
 
-      if (newAlert.authority === user?._id) {
+      setNotifications(prev => {
+        const exists = prev.some(n => n._id === newAlert._id);
+        if (exists) return prev;
+        return [newAlert, ...prev];
+      });
+    };
 
-        setAlerts(prev => [newAlert, ...prev]);
+    socket.on("alertAssigned", handler);
 
-        // 🔔 ADD NOTIFICATION
-        setNotifications(prev => [newAlert, ...prev]);
-
-        // 🔊 PLAY SOUND
-        playSound();
-      }
-
-    });
-
-    // 🔥 ALERT UPDATED
-    socket.on("alertUpdated", (updatedAlert) => {
-
-      setAlerts(prev =>
-        prev.map(alert =>
-          alert._id === updatedAlert._id
-            ? updatedAlert
-            : alert
-        )
-      );
-
-    });
-
-    return () => socket.disconnect();
+    return () => {
+      socket.off("alertAssigned", handler);
+    };
 
   }, []);
 
@@ -65,7 +81,6 @@ const AuthorityDashboard = () => {
 
   const fetchAlerts = async () => {
     try {
-
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
@@ -99,14 +114,10 @@ const AuthorityDashboard = () => {
 
         <div
           style={{ position: "relative", cursor: "pointer" }}
-          onClick={() => {
-            setShowDropdown(!showDropdown);
-            setNotifications([]); // clear after opening
-          }}
+          onClick={() => setShowDropdown(!showDropdown)}   // ✅ FIX ONLY
         >
           <FaBell size={24} />
 
-          {/* 🔴 BADGE */}
           {notifications.length > 0 && (
             <span
               style={{
@@ -144,12 +155,18 @@ const AuthorityDashboard = () => {
             {notifications.length === 0 ? (
               <p style={{ textAlign: "center" }}>No new alerts</p>
             ) : (
-              notifications.map((n, i) => (
+              notifications.map((n) => (
                 <div
-                  key={i}
+                  key={n._id}
                   style={{
                     padding: "10px",
-                    borderBottom: "1px solid #1e293b"
+                    borderBottom: "1px solid #1e293b",
+                    cursor: "pointer"
+                  }}
+                  onClick={() => {
+                    navigate("/authority/alerts");
+                    setNotifications([]);     // ✅ CLEAR HERE ONLY
+                    setShowDropdown(false);
                   }}
                 >
                   🚨 {n.type} at {n.locationName}
@@ -257,7 +274,6 @@ const AuthorityDashboard = () => {
       </div>
 
       <style>{`
-
         .dashboard-card{
           background: rgba(255,255,255,0.05);
           padding: 25px;
@@ -266,7 +282,6 @@ const AuthorityDashboard = () => {
           text-align: center;
           border:1px solid rgba(255,255,255,0.08);
         }
-
       `}</style>
 
     </div>

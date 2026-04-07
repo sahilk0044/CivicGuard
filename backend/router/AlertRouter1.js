@@ -1,21 +1,22 @@
 import express from "express";
 import {
-  sendAlert,
+  
   getUserAlerts,
   getAllAlerts,
   updateAlertStatus,
   deleteAlert,
   getReports,
+  sendAlert,
 } from "../controller/AlertController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadVideo.js";
 
-const AlertRouter = express.Router();
+const AlertRouter1 = express.Router();
 
 /* ================= SEND EMERGENCY ALERT ================= */
 
-AlertRouter.post(
+AlertRouter1.post(
   "/send-alert",
   authMiddleware,
   upload.single("video"),  //post /api/alerts/send-alert
@@ -24,18 +25,18 @@ AlertRouter.post(
 
 /* ================= USER ALERT HISTORY ================= */
 
-AlertRouter.get("/my-alerts", authMiddleware, getUserAlerts);  //get /api/alerts/my-alerts
+AlertRouter1.get("/my-alerts", authMiddleware, getUserAlerts);  //get /api/alerts/my-alerts
 
 /* ================= ADMIN VIEW ALL ALERTS ================= */
 
-AlertRouter.get("/all-alerts",getAllAlerts);  //get /api/alerts/all-alerts
+AlertRouter1.get("/all-alerts",getAllAlerts);  //get /api/alerts/all-alerts
 
 /* ================= UPDATE ALERT STATUS ================= */
 
-AlertRouter.put("/resolve/:id", authMiddleware, updateAlertStatus);  //put /api/alerts/resolve/:id
-AlertRouter.delete("/delete/:id", deleteAlert);  
+AlertRouter1.put("/resolve/:id", authMiddleware, updateAlertStatus);  //put /api/alerts/resolve/:id
+AlertRouter1.delete("/delete/:id", deleteAlert);  
 
-AlertRouter.get("/all-reports", getReports);
+AlertRouter1.get("/all-reports", getReports);
 
 
-export default AlertRouter;
+export default AlertRouter1;

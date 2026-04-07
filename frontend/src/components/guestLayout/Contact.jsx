@@ -236,34 +236,7 @@ const Contact = () => {
             <Col md={6}>
 
               <Row>
-
-                <Col md={12} className="mb-4" data-aos="zoom-in">
-                  <Card className="info-card">
-                    <FaPhoneAlt className="info-icon"/>
-                    <h5>Emergency Helpline</h5>
-                    <p>Dial <strong>112</strong></p>
-                  </Card>
-                </Col>
-
-                <Col md={12} className="mb-4" data-aos="zoom-in" data-aos-delay="200">
-                  <Card className="info-card">
-                    <FaEnvelope className="info-icon"/>
-                    <h5>Email Support</h5>
-                    <p>civicguard.support@gmail.com</p>
-                  </Card>
-                </Col>
-
-                <Col md={12} className="mb-4" data-aos="zoom-in" data-aos-delay="400">
-                  <Card className="info-card">
-                    <FaMapMarkerAlt className="info-icon"/>
-                    <h5>Location</h5>
-                    <p>India Safety Technology Network</p>
-                  </Card>
-                </Col>
-
-                {/* 🔥 NEW SUPPORT CARD */}
-
-                <Col md={12} data-aos="zoom-in" data-aos-delay="600">
+<Col md={12} data-aos="zoom-in" data-aos-delay="600">
                   <Card className="info-card">
 
                     <h5>Need Instant Help?</h5>
@@ -290,6 +263,26 @@ const Contact = () => {
                   </Card>
                 </Col>
 
+
+                <Col md={12} className="mb-4" data-aos="zoom-in" data-aos-delay="200">
+                  <Card className="info-card">
+                    <FaEnvelope className="info-icon"/>
+                    <h5>Email Support</h5>
+                    <p>civicguard.support@gmail.com</p>
+                  </Card>
+                </Col>
+
+                <Col md={12} className="mb-4" data-aos="zoom-in" data-aos-delay="400">
+                  <Card className="info-card">
+                    <FaMapMarkerAlt className="info-icon"/>
+                    <h5>Location</h5>
+                    <p>India Safety Technology Network</p>
+                  </Card>
+                </Col>
+
+                {/* 🔥 NEW SUPPORT CARD */}
+
+                
               </Row>
 
             </Col>

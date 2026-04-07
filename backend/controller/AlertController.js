@@ -1,6 +1,7 @@
 import Alert from "../models/Alert.js";
 import User from "../models/User.js";
 import Authority from "../models/Authority.js";
+import nodemailer from "nodemailer";
 
 /* ================= DISTANCE FUNCTION ================= */
 
@@ -81,6 +82,45 @@ export const sendAlert = async (req, res) => {
 
     await alert.save();
 
+    /* ================== NEW EMAIL PART START ================== */
+
+    const user = await User.findById(req.user._id);
+
+    if (user && user.emergencyContacts && user.emergencyContacts.length > 0) {
+
+      const emails = user.emergencyContacts.map(c => c.email);
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.EMAIL_PASSWORD
+        }
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: emails,
+        subject: "🚨 Emergency Alert!",
+        html: `
+          <h2>🚨 Emergency Alert Triggered</h2>
+          <p><strong>User:</strong> ${user.name}</p>
+          <p><strong>Type:</strong> ${type}</p>
+          <p><strong>Location:</strong> ${locationName}</p>
+          <p><strong>Coordinates:</strong> ${latitude}, ${longitude}</p>
+          <p>
+            <a href="https://www.google.com/maps?q=${latitude},${longitude}" target="_blank">
+              View Location on Map
+            </a>
+          </p>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
+    /* ================== NEW EMAIL PART END ================== */
+
     /* STEP 5: REAL TIME SOCKET EVENTS */
 
     const io = req.app.get("io");
@@ -104,7 +144,6 @@ export const sendAlert = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 
 /* ================= GET ALL ALERTS ================= */
