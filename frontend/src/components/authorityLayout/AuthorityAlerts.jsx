@@ -170,33 +170,48 @@ const AuthorityAlerts = () => {
         )}
 
       </div>
+<style>{`
 
-      <style>{`
+.alert-card{
+  background:rgba(255,255,255,0.05);
+  padding:16px;                 /* ✅ smaller */
+  border-radius:12px;
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.08);
+  transition:0.3s;
 
-      .alert-card{
-        background:rgba(255,255,255,0.05);
-        padding:20px;
-        border-radius:14px;
-        backdrop-filter:blur(12px);
-        border:1px solid rgba(255,255,255,0.08);
-        transition:0.3s;
-      }
+  height:100%;                 /* ✅ SAME HEIGHT */
+  display:flex;                /* ✅ FLEX LAYOUT */
+  flex-direction:column;       /* ✅ STACK CONTENT */
+  justify-content:space-between;
+}
 
-      .alert-card:hover{
-        box-shadow:0 10px 25px rgba(0,0,0,0.3);
-      }
+.alert-card:hover{
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
 
-      .alert-card h4{
-        margin-bottom:10px;
-      }
+.alert-card h4{
+  margin-bottom:8px;
+  font-size:16px;              /* ✅ smaller */
+}
 
-      .alert-actions{
-        margin-top:15px;
-        display:flex;
-        justify-content:flex-end;
-      }
+.alert-card p{
+  font-size:13px;              /* ✅ compact text */
+  margin-bottom:6px;
+}
 
-      `}</style>
+.alert-card video{
+  max-height:120px;            /* ✅ LIMIT VIDEO SIZE */
+  object-fit:cover;
+}
+
+.alert-actions{
+  margin-top:auto;             /* ✅ PUSH BUTTON DOWN */
+  display:flex;
+  justify-content:flex-end;
+}
+
+`}</style>
 
     </div>
 

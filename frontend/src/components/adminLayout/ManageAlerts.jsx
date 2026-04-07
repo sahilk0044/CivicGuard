@@ -33,7 +33,6 @@ const ManageAlerts = () => {
       );
     });
 
-    // ✅ CLEANUP (VERY IMPORTANT)
     return () => {
       socket.off("newAlert");
       socket.off("alertUpdated");
@@ -106,8 +105,8 @@ const ManageAlerts = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
-          gap: "20px",
+          gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", // ✅ smaller grid
+          gap: "16px",
           width: "100%"
         }}
       >
@@ -117,19 +116,22 @@ const ManageAlerts = () => {
           <motion.div
             layout
             key={alert._id}
-            whileHover={{ scale: 1.04 }}
+            whileHover={{ scale: 1.03 }}
             style={{
-              padding: "20px",
-              borderRadius: "14px",
+              padding: "14px",                // ✅ smaller padding
+              borderRadius: "12px",
               background: "rgba(255,255,255,0.05)",
               backdropFilter: "blur(12px)",
               border: "1px solid rgba(255,255,255,0.1)",
               boxSizing: "border-box",
-              wordBreak: "break-word"
+              wordBreak: "break-word",
+              fontSize: "13px"               // ✅ compact text
             }}
           >
 
-            <h4>🚨 {alert.type?.toUpperCase()} ALERT</h4>
+            <h4 style={{ fontSize: "15px", marginBottom: "6px" }}>
+              🚨 {alert.type?.toUpperCase()} ALERT
+            </h4>
 
             <p>User: {alert.user?.name || "Unknown"}</p>
 
@@ -154,7 +156,9 @@ const ManageAlerts = () => {
                 controls
                 style={{
                   width: "100%",
-                  marginTop: "10px",
+                  maxHeight: "120px",        // ✅ fixed video size
+                  objectFit: "cover",
+                  marginTop: "8px",
                   borderRadius: "8px"
                 }}
               >
@@ -162,13 +166,13 @@ const ManageAlerts = () => {
               </video>
             )}
 
-            <div style={{ marginTop: "12px", display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ marginTop: "8px", display: "flex", justifyContent: "flex-end" }}>
               <button
                 onClick={() => setSelectedAlert(alert)}
                 style={{
                   background: "#ef4444",
                   border: "none",
-                  padding: "6px 12px",
+                  padding: "5px 10px",      // ✅ smaller button
                   borderRadius: "6px",
                   color: "white",
                   cursor: "pointer"
@@ -207,10 +211,10 @@ const ManageAlerts = () => {
             animate={{ scale: 1 }}
             style={{
               background: "#0f172a",
-              padding: "30px",
+              padding: "25px",
               borderRadius: "12px",
               width: "100%",
-              maxWidth: "350px",
+              maxWidth: "320px",   // ✅ slightly smaller modal
               textAlign: "center"
             }}
           >
@@ -233,7 +237,7 @@ const ManageAlerts = () => {
                   background: "#ef4444",
                   color: "white",
                   border: "none",
-                  padding: "8px 14px",
+                  padding: "6px 12px",
                   borderRadius: "6px"
                 }}
               >

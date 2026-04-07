@@ -1,8 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import AOS from "aos";
-import "aos/dist/aos.css";
 
 import {
   FaTachometerAlt,
@@ -17,18 +15,14 @@ import {
 
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
-  useEffect(() => {
-    AOS.init({ duration: 1000 });
-  }, []);
-
   const menuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: <FaTachometerAlt /> },
     { name: "Users", path: "/admin/users", icon: <FaUsers /> },
     { name: "Authorities", path: "/admin/authorities", icon: <FaUserShield /> },
     { name: "Alerts", path: "/admin/alerts", icon: <FaBell /> },
     { name: "Reports", path: "/admin/reports", icon: <FaChartBar /> },
-    { name: "Profile", path: "/admin/profile" ,icon: <FaUser />},
-    { name: "Logout", path: "/admin/login",icon: <FaSignOutAlt /> }
+    { name: "Profile", path: "/admin/profile", icon: <FaUser /> },
+    { name: "Logout", path: "/admin/login", icon: <FaSignOutAlt /> }
   ];
 
   return (
@@ -69,7 +63,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         }}
       >
 
-        {/* Close button (mobile) */}
+        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h3 style={{ fontWeight: "600", letterSpacing: "1px" }}>
@@ -89,33 +83,33 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         {/* Navigation */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "40px" }}>
 
-          {menuItems.map((item, index) => (
-            <NavLink
-              key={index}
-              to={item.path}
-              data-aos="fade-right"
-              onClick={() => setSidebarOpen(false)}
-              style={({ isActive }) => ({
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "12px 15px",
-                borderRadius: "10px",
-                textDecoration: "none",
-                fontSize: "15px",
-                color: isActive ? "#38bdf8" : "#e2e8f0",
-                background: isActive
-                  ? "rgba(56,189,248,0.15)"
-                  : "transparent",
-                transition: "all 0.3s ease"
-              })}
-            >
-              <motion.div whileHover={{ scale: 1.2 }}>
-                {item.icon}
-              </motion.div>
+          {menuItems.map((item) => (
+            <motion.div key={item.name} whileHover={{ scale: 1.05 }}>
+              <NavLink
+                to={item.path}
+                onClick={() => setSidebarOpen(false)}
+                style={({ isActive }) => ({
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "12px 15px",
+                  borderRadius: "10px",
+                  textDecoration: "none",
+                  fontSize: "15px",
+                  color: isActive ? "#38bdf8" : "#e2e8f0",
+                  background: isActive
+                    ? "rgba(56,189,248,0.15)"
+                    : "transparent",
+                  transition: "all 0.3s ease"
+                })}
+              >
+                <motion.div whileHover={{ scale: 1.2 }}>
+                  {item.icon}
+                </motion.div>
 
-              {item.name}
-            </NavLink>
+                {item.name}
+              </NavLink>
+            </motion.div>
           ))}
 
         </div>
