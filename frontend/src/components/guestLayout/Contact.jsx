@@ -4,7 +4,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
 
-import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import {FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
 const Contact = () => {
 
@@ -24,7 +24,7 @@ const Contact = () => {
   /* 🔥 WHATSAPP + CHAT FUNCTIONS */
 
   const openWhatsApp = () => {
-    const phone = "919876543210"; // 🔥 replace this
+    const phone = "8660455892"; // 🔥 replace this
     const message = "Hello, I need help regarding CivicGuard";
 
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;

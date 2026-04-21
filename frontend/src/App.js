@@ -19,9 +19,6 @@ import ManageUsers from "./components/adminLayout/ManageUsers";
 import ManageAuthorities from "./components/adminLayout/ManageAuthorities";
 import ManageAlerts from "./components/adminLayout/ManageAlerts";
 import Reports from "./components/adminLayout/Reports";
-import axios from "axios";
-import { useEffect } from "react";
-import Settings from "./components/adminLayout/Settings";
 import AuthorityLayout from "./components/authorityLayout/AuthorityLayout";
 import AuthorityDashboard from "./components/authorityLayout/AuthorityDashboard";
 import AuthorityAlerts from "./components/authorityLayout/AuthorityAlerts";
@@ -72,7 +69,6 @@ function App() {
     <Route path="/admin/authorities" element={<ManageAuthorities/>}/>
     <Route path="/admin/alerts" element={<ManageAlerts/>}/>
     <Route path="/admin/reports" element={<Reports />} />
-    <Route path="/admin/settings" element={<Settings />} />
     <Route path="/admin/profile" element={<AdminProfile />} />
     
     

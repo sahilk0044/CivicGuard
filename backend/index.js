@@ -10,7 +10,6 @@ import { Server } from "socket.io";
 import UserRouter from "./router/UserRouter.js";
 import AdminRouter from "./router/AdminRouter.js";
 import AuthorityRouter from "./router/AuthorityRouter.js";
-import SettingsRouter from "./router/SettingsRouter.js";
 import AlertRouter1 from "./router/AlertRouter1.js";
 
 const app = express();
@@ -28,7 +27,6 @@ app.use("/api/users", UserRouter);
 app.use("/api/alerts", AlertRouter1);
 app.use("/api/admin", AdminRouter);
 app.use("/api/authority", AuthorityRouter);
-app.use("/api/setting", SettingsRouter);
 
 app.use("/uploads", express.static("uploads"));
 app.use("/videos", express.static("uploads/videos"));
